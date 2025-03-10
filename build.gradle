@@ -75,6 +75,9 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    
+    // Note: The networking module is included in the main fabric-api
+    // We'll use the main fabric-api for now until we have the correct module name
 
     // Cloth/Auto Config
     modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
@@ -122,8 +125,8 @@ java {
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
-    sourceCompatibility = JavaVersion.toVersion(mod_java_version)
-    targetCompatibility = JavaVersion.toVersion(mod_java_version)
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
 }
 
 jar {

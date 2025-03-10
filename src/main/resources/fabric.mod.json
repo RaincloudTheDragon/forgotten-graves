@@ -18,7 +18,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [ "me.mgin.graves.Graves" ],
-    "client": [ "me.mgin.graves.client.GravesClient" ],
+    "client": [ 
+      "me.mgin.graves.client.GravesClient",
+      "me.mgin.graves.client.GravesClientNetworking"
+    ],
     "modmenu": [ "me.mgin.graves.GravesModMenuIntegration" ],
     "fabric-datagen": [ "me.mgin.graves.GraveDataGenerator" ]
   },
