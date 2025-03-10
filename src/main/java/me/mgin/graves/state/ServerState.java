@@ -13,19 +13,58 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.PersistentStateCompat;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.DefaultedList;
+import me.mgin.graves.api.InventoriesApi;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 public class ServerState extends PersistentState {
     public HashMap<UUID, PlayerState> players = new HashMap<>();
 
-    //? if >1.20.5 {
+    // Method for 1.20.5+
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        return writeNbtInternal(nbt);
+    }
+
+    // Method for pre-1.20.5
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        return writeNbtInternal(nbt);
+    }
+
+    // Common implementation for both versions
+    private NbtCompound writeNbtInternal(NbtCompound nbt) {
+        // Store each player's data in a single nbt tag
+        NbtCompound playersNbt = new NbtCompound();
+
+        players.forEach((UUID, playerData) -> {
+            NbtCompound playerNbt = new NbtCompound();
+            playerNbt.put("graves", playerData.graves);
+            playersNbt.put(String.valueOf(UUID), playerNbt);
+        });
+
+        // Put all players nbt into the server state's nbt
+        nbt.put("players", playersNbt);
+
+        return nbt;
+    }
+
+    // Factory method for 1.20.5+
     public static ServerState createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-    //?} else {
-    /*public static ServerState createFromNbt(NbtCompound tag) {
-    *///?}
+        return createFromNbtInternal(tag);
+    }
+
+    // Factory method for pre-1.20.5
+    public static ServerState createFromNbt(NbtCompound tag) {
+        return createFromNbtInternal(tag);
+    }
+
+    // Common implementation for both factory methods
+    private static ServerState createFromNbtInternal(NbtCompound tag) {
         ServerState serverState = new ServerState();
 
         // Extract every player's data from the provided tag
@@ -44,34 +83,12 @@ public class ServerState extends PersistentState {
         return serverState;
     }
 
-    @Override
-    //? if >1.20.5 {
-        public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-    //?} else {
-    /*public NbtCompound writeNbt(NbtCompound nbt) {
-    *///?}
-        // Store each player's data in a single nbt tag
-        NbtCompound playersNbt = new NbtCompound();
-
-        players.forEach((UUID, playerData) -> {
-            NbtCompound playerNbt = new NbtCompound();
-            playerNbt.put("graves", playerData.graves);
-            playersNbt.put(String.valueOf(UUID), playerNbt);
-        });
-
-        // Put all players nbt into the server state's nbt
-        nbt.put("players", playersNbt);
-
-        return nbt;
-    }
-
-    //? if >=1.20.2 {
+    // Update the Type to use the correct factory method
     private static final Type<ServerState> type = new Type<>(
         ServerState::new,
-        ServerState::createFromNbt,
+        (tag, registryLookup) -> createFromNbt(tag, registryLookup),
         null
     );
-    //?}
 
     public static ServerState getServerState(MinecraftServer server) {
         if (server == null) return null;
@@ -112,11 +129,26 @@ public class ServerState extends PersistentState {
         }
 
         // Convert GraveBlockEntity into nbt
-        NbtCompound graveNbt = graveEntity.toNbt(
-            //? if >1.20.5 {
-            player.getWorld().getRegistryManager()
-            //?}
-        );
+        NbtCompound graveNbt;
+        try {
+            // Get the registry lookup from the world
+            RegistryWrapper.WrapperLookup registryLookup = null;
+            try {
+                // Try to get the WrapperLookup using reflection
+                java.lang.reflect.Method getWrapperLookupMethod = player.getWorld().getRegistryManager().getClass().getMethod("getWrapperLookup");
+                registryLookup = (RegistryWrapper.WrapperLookup) getWrapperLookupMethod.invoke(player.getWorld().getRegistryManager());
+            } catch (Exception e) {
+                System.err.println("Failed to get registry lookup: " + e.getMessage());
+                registryLookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
+            }
+            
+            // Convert the grave entity to NBT
+            graveNbt = graveEntity.toNbt(registryLookup);
+        } catch (Exception e) {
+            System.err.println("Failed to convert grave to NBT: " + e.getMessage());
+            e.printStackTrace();
+            graveNbt = new NbtCompound(); // Create an empty NBT as fallback
+        }
 
         // Store the grave's position in nbt
         BlockPos gravePos = graveEntity.getPos();
@@ -127,6 +159,9 @@ public class ServerState extends PersistentState {
         // Store the grave's dimension in nbt
         graveNbt.putString("dimension", VersionedCode.Worlds.getDimension(graveEntity.getWorld()));
 
+        // Debug the NBT before storing
+        me.mgin.graves.compat.SerializationHelper.debugGraveNbt(graveNbt);
+
         // Store the grave nbt in the global state
         playerState.graves.add(graveNbt);
 
@@ -135,6 +170,8 @@ public class ServerState extends PersistentState {
 
         // Mark dirty to commit server state
         getServerState(server).markDirty();
+        
+        System.out.println("Successfully stored grave for player " + player.getName().getString());
     }
 
     private static void cleanupPlayerGraves(PlayerState playerState) {

@@ -13,6 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.WorldCompat;
 
 //? if <1.20.5 {
 /*import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -75,18 +76,15 @@ public class VersionedCode {
 
     public static class Worlds {
         public static String getDimension(World world) {
-            //? if >1.20.5 {
-            return world.getDimensionEntry().getIdAsString();
-            //?} else {
-            /*return String.valueOf(world.getDimensionKey().getValue());
-            *///?}
+            return WorldCompat.getDimensionKey(world);
         }
     }
 
     public static class ItemStacks {
         public static String getCustomName(ItemStack stack) {
             //? if >=1.20.5 {
-            return stack.get(DataComponentTypes.CUSTOM_NAME).getLiteralString();
+            Text customName = stack.get(DataComponentTypes.CUSTOM_NAME);
+            return customName != null ? customName.getLiteralString() : null;
             //?} else {
             /*return stack.getOrCreateSubNbt("display").getString("Name");*/
             //?}
