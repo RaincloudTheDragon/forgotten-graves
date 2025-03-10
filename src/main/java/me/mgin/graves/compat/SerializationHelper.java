@@ -1,7 +1,6 @@
 package me.mgin.graves.compat;
 
 import com.mojang.authlib.GameProfile;
-import me.mgin.graves.Graves;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
