@@ -7,11 +7,12 @@ import me.mgin.graves.config.GravesConfig;
 import me.mgin.graves.networking.config.ConfigNetworking;
 import me.mgin.graves.util.Responder;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import me.mgin.graves.networking.compat.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import me.mgin.graves.networking.NetworkHelper;
 
 public class ReloadConfigCommand {
     /**
@@ -55,7 +56,7 @@ public class ReloadConfigCommand {
         ServerCommandSource source = context.getSource();
 
         if (source.getEntity() instanceof ServerPlayerEntity player) {
-            ServerPlayNetworking.send(player, ConfigNetworking.RELOAD_CONFIG_S2C, PacketByteBufs.create());
+            NetworkHelper.sendToPlayer(player, ConfigNetworking.RELOAD_CONFIG_S2C, PacketByteBufs.create());
             res.sendSuccess(Text.translatable("command.config.reload:success"), null);
         } else {
             res.sendError(Text.translatable("command.generic:error.not-player"), null);

@@ -16,11 +16,15 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.BlockEntityCompat;
+import net.minecraft.registry.RegistryWrapper;
+import me.mgin.graves.util.NbtHelper;
 
 import java.util.Objects;
 
@@ -60,6 +64,9 @@ public class RetrieveGrave {
      * @param graveEntityTag NbtCompound
      */
     static public void retrieveWithCommand(PlayerEntity player, NbtCompound graveEntityTag) {
+        // Debug the grave NBT
+        me.mgin.graves.compat.SerializationHelper.debugGraveNbt(graveEntityTag);
+        
         // Get the coordinates from the grave entity tag
         BlockPos pos = new BlockPos(
             graveEntityTag.getInt("x"),
@@ -86,10 +93,63 @@ public class RetrieveGrave {
             }
 
             // Create a new grave entity if it did not exist in the world
-            if (graveEntity == null ) {
-                // Create new grave block entity and read the nbt tag into it
+            if (graveEntity == null) {
+                // Create new grave block entity
                 graveEntity = new GraveBlockEntity(pos, GraveBlocks.GRAVE.getDefaultState());
-                graveEntity.readNbt(graveEntityTag);
+                
+                try {
+                    // Get a WrapperLookup
+                    RegistryWrapper.WrapperLookup registryLookup = null;
+                    try {
+                        java.lang.reflect.Method getWrapperLookupMethod = world.getRegistryManager().getClass().getMethod("getWrapperLookup");
+                        registryLookup = (RegistryWrapper.WrapperLookup) getWrapperLookupMethod.invoke(world.getRegistryManager());
+                    } catch (Exception e) {
+                        System.err.println("Failed to get registry lookup: " + e.getMessage());
+                        registryLookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
+                    }
+                    
+                    // Set basic properties
+                    if (graveEntityTag.contains("XP")) {
+                        graveEntity.setXp(graveEntityTag.getInt("XP"));
+                    }
+                    
+                    if (graveEntityTag.contains("NoDecay") || graveEntityTag.contains("noDecay")) {
+                        int noDecay = graveEntityTag.contains("NoDecay") ? 
+                            graveEntityTag.getInt("NoDecay") : graveEntityTag.getInt("noDecay");
+                        graveEntity.setNoDecay(noDecay);
+                    }
+                    
+                    if (graveEntityTag.contains("mstime") || graveEntityTag.contains("Mstime")) {
+                        long mstime = graveEntityTag.contains("mstime") ? 
+                            graveEntityTag.getLong("mstime") : graveEntityTag.getLong("Mstime");
+                        graveEntity.setMstime(mstime);
+                    }
+                    
+                    // Set grave owner
+                    GameProfile owner = me.mgin.graves.compat.SerializationHelper.readGameProfile(graveEntityTag);
+                    if (owner != null) {
+                        graveEntity.setGraveOwner(owner);
+                    }
+                    
+                    // Set custom name
+                    if (graveEntityTag.contains("CustomName")) {
+                        graveEntity.setCustomName(graveEntityTag.getString("CustomName"));
+                    }
+                    
+                    // Set grave skull
+                    if (graveEntityTag.contains("GraveSkull")) {
+                        graveEntity.setGraveSkull(graveEntityTag.getCompound("GraveSkull"));
+                    }
+                    
+                    // Load inventories
+                    me.mgin.graves.compat.SerializationHelper.readInventories(graveEntityTag, graveEntity.getInventories(), registryLookup);
+                    
+                    System.out.println("Successfully loaded grave with " + graveEntity.getInventories().size() + " inventories");
+                } catch (Exception e) {
+                    System.err.println("Error reading grave data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
                 // Do not delete any grave in that location
                 destroyGrave = false;
             }
@@ -97,7 +157,6 @@ public class RetrieveGrave {
             retrieve(player, graveEntity, world, pos, true, destroyGrave);
             return;
         }
-
     }
 
     /**
@@ -138,7 +197,9 @@ public class RetrieveGrave {
         );
 
         // Add player experience back
-        player.addExperience(graveEntity.getXp());
+        int xpToAdd = graveEntity.getXp();
+        System.out.println("DEBUG: Adding XP to player: " + xpToAdd);
+        player.addExperience(xpToAdd);
 
         // Remove block if it exists
         if (world.getBlockEntity(pos) instanceof GraveBlockEntity && destroyGrave) {

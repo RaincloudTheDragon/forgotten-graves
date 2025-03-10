@@ -15,6 +15,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.ItemStackCompat;
 
 import java.util.Random;
 
@@ -55,7 +56,7 @@ public class Shovel {
             float breakChance = ((100f / (unbreaking + 1f)) / 100f);
 
             if (!player.isCreative() && breakChance >= random.nextFloat()) {
-                player.getStackInHand(hand).damage(1, player, (p) -> p.sendToolBreakStatus(hand));
+                ItemStackCompat.damage(player.getStackInHand(hand), 1, player, hand);
             }
 
             // Spawn particles and sound in world

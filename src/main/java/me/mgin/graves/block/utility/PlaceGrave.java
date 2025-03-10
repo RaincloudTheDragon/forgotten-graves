@@ -146,6 +146,7 @@ public class PlaceGrave {
 
         // Set experience & reset player's XP
         int experience = Experience.calculatePlayerExperience(player);
+        System.out.println("DEBUG: Calculated XP for grave: " + experience + " (Player level: " + player.experienceLevel + ", progress: " + player.experienceProgress + ")");
         graveEntity.setXp(experience);
         resetPlayerExperience(player);
 

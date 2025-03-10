@@ -12,6 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.ItemStackCompat;
 
 public class NameTag {
     public static Boolean handle(PlayerEntity player, World world, Hand hand, BlockPos pos,
@@ -20,7 +21,7 @@ public class NameTag {
         boolean isNameTagItem = item instanceof NameTagItem;
         boolean isMainHand = hand.equals(Hand.MAIN_HAND);
         boolean unownedGrave = entity.getGraveOwner() == null;
-        boolean hasCustomName = stack.hasCustomName();
+        boolean hasCustomName = ItemStackCompat.hasCustomName(stack);
 
         if (!isNameTagItem || !isMainHand || !unownedGrave || !hasCustomName) return false;
 

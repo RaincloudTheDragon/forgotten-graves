@@ -258,19 +258,23 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
         BlockEntity blockEntity = world.getBlockEntity(pos);
         String customName = VersionedCode.ItemStacks.getCustomName(itemStack);
 
-        if (!(blockEntity instanceof GraveBlockEntity graveEntity) || customName == null) {
+        if (!(blockEntity instanceof GraveBlockEntity graveEntity)) {
             super.onPlaced(world, pos, state, placer, itemStack);
             return;
         }
 
-        graveEntity.setCustomName(
-            //? if >1.20.2 {
-            // Handle custom names with newline characters
-            customName.replace("\\\\n", "\\n")
-            //?} else {
-            /*customName
-            *///?}
-        );
+        if (customName != null) {
+            graveEntity.setCustomName(
+                //? if >1.20.2 {
+                // Handle custom names with newline characters
+                customName.replace("\\\\n", "\\n")
+                //?} else {
+                /*customName*/
+                //?}
+            );
+        }
+
+        super.onPlaced(world, pos, state, placer, itemStack);
     }
 
     public BlockState getPlacementState(ItemPlacementContext context) {

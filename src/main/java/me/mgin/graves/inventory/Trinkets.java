@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Equipment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.event.GameEvent;
 
@@ -138,12 +139,9 @@ public class Trinkets implements InventoriesApi {
                             if (TrinketSlot.canInsert(stack, ref, player)) {
                                 ItemStack newStack = stack.copy();
                                 inventory.setStack(i, newStack);
-                                SoundEvent soundEvent = stack.getItem() instanceof Equipment eq ? eq.getEquipSound() :
-                                    null;
-
-                                if (!stack.isEmpty() && soundEvent != null) {
+                                // Just emit the game event without playing a sound
+                                if (!stack.isEmpty()) {
                                     player.emitGameEvent(GameEvent.EQUIP);
-                                    player.playSound(soundEvent, 1.0F, 1.0F);
                                 }
 
                                 stack.setCount(0);

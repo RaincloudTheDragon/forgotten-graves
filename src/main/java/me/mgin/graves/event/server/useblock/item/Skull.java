@@ -13,6 +13,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import me.mgin.graves.compat.ItemStackCompat;
 
 import java.util.HashSet;
 
@@ -42,7 +43,7 @@ public class Skull {
 
         if (hasOwner || !isValidSkull || !isMainHand) return false;
 
-        NbtCompound initialItemNbt = stack.getNbt();
+        NbtCompound initialItemNbt = ItemStackCompat.getNbt(stack);
         BlockState state = entity.getState();
         NbtCompound skull;
 

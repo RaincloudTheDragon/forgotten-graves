@@ -19,7 +19,7 @@ public class NbtHelper {
 
             DefaultedList<ItemStack> stacks = DefaultedList.ofSize(itemCount, ItemStack.EMPTY);
 
-            Inventories.readNbt(nbt.getCompound(key), stacks);
+            Inventories.readNbt(nbt.getCompound(key), stacks, null);
 
             return stacks;
         }
@@ -49,7 +49,7 @@ public class NbtHelper {
         nbt.put("ItemCount", itemCount);
 
         // Store the inventory
-        nbt.put(key, Inventories.writeNbt(new NbtCompound(), stacks, true));
+        nbt.put(key, Inventories.writeNbt(new NbtCompound(), stacks, null));
 
         return nbt;
     }
@@ -92,7 +92,7 @@ public class NbtHelper {
     private static NbtCompound upgradeInventories(NbtCompound nbt) {
         // Retrieve the items like normal
         DefaultedList<ItemStack> oldItems = DefaultedList.ofSize(nbt.getInt("ItemCount"), ItemStack.EMPTY);
-        Inventories.readNbt(nbt.getCompound("Items"), oldItems);
+        Inventories.readNbt(nbt.getCompound("Items"), oldItems, null);
 
         // Separate the item lists
         DefaultedList<ItemStack> items = DefaultedList.ofSize(0);
@@ -110,8 +110,8 @@ public class NbtHelper {
         nbt.put("ItemCount", itemCount);
 
         // Store the two inventories
-        nbt.put("Items", Inventories.writeNbt(new NbtCompound(), items, true));
-        nbt.put("trinkets", Inventories.writeNbt(new NbtCompound(), trinkets, true));
+        nbt.put("Items", Inventories.writeNbt(new NbtCompound(), items, null));
+        nbt.put("trinkets", Inventories.writeNbt(new NbtCompound(), trinkets, null));
 
         return nbt;
     }
