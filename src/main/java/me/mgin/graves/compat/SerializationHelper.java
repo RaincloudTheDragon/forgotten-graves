@@ -266,7 +266,7 @@ public class SerializationHelper {
             System.out.println("=== DEBUG: Grave NBT Contents ===");
             System.out.println("Position: " + nbt.getInt("x") + ", " + nbt.getInt("y") + ", " + nbt.getInt("z"));
             System.out.println("Dimension: " + nbt.getString("dimension"));
-            System.out.println("Time: " + nbt.getLong("time"));
+            System.out.println("Time: " + nbt.getLong("mstime"));
             System.out.println("XP: " + nbt.getInt("XP"));
             
             if (nbt.contains("owner")) {

@@ -16,10 +16,12 @@ plugins {
     id "dev.kikugie.stonecutter" version "0.4.4"
 }
 
+rootProject.name = "forgottengraves"
+
 stonecutter {
     shared {
-        // Only supporting 1.20.5
-        versions "1.20.5"
+        // Supporting both 1.20.5 and 1.20.6
+        versions "1.20.5", "1.20.6"
     }
 
     create rootProject

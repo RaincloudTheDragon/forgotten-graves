@@ -5,13 +5,16 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import java.lang.reflect.Method;
 import java.util.UUID;
-import java.util.Map;
 import java.lang.reflect.Constructor;
 
 /**
  * Compatibility layer for GameProfile and NbtHelper operations that have changed in Minecraft 1.20.5
  */
 public class ProfileCompat {
+    // Static flags to prevent repeated error logging
+    private static boolean loggedClassNotFound = false;
+    private static boolean loggedConstructorError = false;
+    private static boolean loggedGeneralError = false;
 
     /**
      * Converts a GameProfile to NBT
@@ -83,106 +86,37 @@ public class ProfileCompat {
             try {
                 profileComponentClass = Class.forName("net.minecraft.component.type.ProfileComponent");
             } catch (ClassNotFoundException e) {
-                // Class doesn't exist, return null
-                System.err.println("ProfileComponent class not found: " + e.getMessage());
+                // Class doesn't exist, return null - only log this once
+                if (!loggedClassNotFound) {
+                    System.err.println("ProfileComponent class not found: " + e.getMessage());
+                    loggedClassNotFound = true;
+                }
                 return null;
             }
             
-            // Try to find the create method (1.20.5 specific)
-            try {
-                Method createMethod = profileComponentClass.getDeclaredMethod("create", UUID.class, String.class);
-                createMethod.setAccessible(true);
-                Object component = createMethod.invoke(null, profile.getId(), profile.getName());
-                
-                if (component != null) {
-                    System.out.println("Successfully created ProfileComponent using create(UUID, String) method");
-                    return component;
-                }
-            } catch (Exception e) {
-                System.err.println("Error with create(UUID, String) method: " + e.getMessage());
-            }
-            
-            // Try to find the static factory method (1.20.5 specific)
-            try {
-                Method factoryMethod = profileComponentClass.getDeclaredMethod("factory");
-                factoryMethod.setAccessible(true);
-                Object factory = factoryMethod.invoke(null);
-                
-                if (factory != null) {
-                    // Try to find the create method on the factory
-                    Method createMethod = factory.getClass().getDeclaredMethod("create", UUID.class, String.class);
-                    createMethod.setAccessible(true);
-                    Object component = createMethod.invoke(factory, profile.getId(), profile.getName());
-                    
-                    if (component != null) {
-                        System.out.println("Successfully created ProfileComponent using factory().create(UUID, String) method");
-                        return component;
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("Error with factory method: " + e.getMessage());
-            }
-            
-            // Based on the original code, try the direct constructor with GameProfile
+            // Try the direct constructor with GameProfile - this seems to work based on logs
             try {
                 Constructor<?> constructor = profileComponentClass.getConstructor(GameProfile.class);
                 Object component = constructor.newInstance(profile);
-                System.out.println("Successfully created ProfileComponent using GameProfile constructor");
                 return component;
-            } catch (NoSuchMethodException e) {
-                System.err.println("ProfileComponent(GameProfile) constructor not found: " + e.getMessage());
             } catch (Exception e) {
-                System.err.println("Error creating ProfileComponent with GameProfile constructor: " + e.getMessage());
-            }
-            
-            // Approach 1: Try to use the static factory method of(UUID, String)
-            try {
-                Method ofMethod = profileComponentClass.getDeclaredMethod("of", UUID.class, String.class);
-                ofMethod.setAccessible(true);
-                Object component = ofMethod.invoke(null, profile.getId(), profile.getName());
-                
-                if (component != null) {
-                    System.out.println("Successfully created ProfileComponent using of(UUID, String) method");
-                    return component;
+                // Only log this once
+                if (!loggedConstructorError) {
+                    System.err.println("Error creating ProfileComponent with GameProfile constructor: " + e.getMessage());
+                    loggedConstructorError = true;
                 }
-            } catch (Exception e) {
-                System.err.println("Error with of(UUID, String) method: " + e.getMessage());
             }
             
-            // Approach 2: Try to use the static factory method of(GameProfile)
-            try {
-                Method ofMethod = profileComponentClass.getDeclaredMethod("of", GameProfile.class);
-                ofMethod.setAccessible(true);
-                Object component = ofMethod.invoke(null, profile);
-                
-                if (component != null) {
-                    System.out.println("Successfully created ProfileComponent using of(GameProfile) method");
-                    return component;
-                }
-            } catch (Exception e) {
-                System.err.println("Error with of(GameProfile) method: " + e.getMessage());
-            }
-            
-            // Approach 3: Try to use the constructor with UUID and String
-            try {
-                Constructor<?> constructor = profileComponentClass.getDeclaredConstructor(UUID.class, String.class);
-                constructor.setAccessible(true);
-                Object component = constructor.newInstance(profile.getId(), profile.getName());
-                
-                if (component != null) {
-                    System.out.println("Successfully created ProfileComponent using UUID, String constructor");
-                    return component;
-                }
-            } catch (Exception e) {
-                System.err.println("Error with UUID, String constructor: " + e.getMessage());
-            }
-            
-            // If all approaches fail, return null
-            System.err.println("All approaches to create ProfileComponent failed");
+            // If the constructor approach fails, return null without trying other approaches
+            // This avoids the flood of error messages
             return null;
+            
         } catch (Exception e) {
-            // Log the error and return null
-            System.err.println("Error creating ProfileComponent: " + e.getMessage());
+            // Log the error and return null - only log this once
+            if (!loggedGeneralError) {
+                System.err.println("Error creating ProfileComponent: " + e.getMessage());
+                loggedGeneralError = true;
+            }
             return null;
         }
     }

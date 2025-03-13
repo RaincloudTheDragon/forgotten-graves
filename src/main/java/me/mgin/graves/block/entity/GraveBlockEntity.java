@@ -1,10 +1,7 @@
 package me.mgin.graves.block.entity;
 
 import com.mojang.authlib.GameProfile;
-import me.mgin.graves.Graves;
-import me.mgin.graves.api.InventoriesApi;
 import me.mgin.graves.block.GraveBlocks;
-import me.mgin.graves.util.NbtHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,7 +11,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
@@ -26,15 +22,8 @@ import java.util.Map;
 import net.minecraft.registry.RegistryWrapper;
 //?}
 
-// Add import for our compatibility layer
-import me.mgin.graves.compat.BlockEntityCompat;
-import me.mgin.graves.compat.ItemStackCompat;
-
 // Add import for Property
 import net.minecraft.state.property.Property;
-
-// Add import for WrapperLookup
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 
 public class GraveBlockEntity extends BlockEntity {
     private GameProfile graveOwner;
@@ -264,8 +253,9 @@ public class GraveBlockEntity extends BlockEntity {
             super.writeNbt(nbt, registryLookup);
             
             // Write basic properties
+            System.out.println("DEBUG: About to write XP to NBT: " + this.xp + " (this.xp value)");
             nbt.putInt("XP", this.xp);
-            System.out.println("DEBUG: Writing XP to NBT: " + this.xp);
+            System.out.println("DEBUG: After writing XP to NBT, checking value: " + nbt.getInt("XP"));
             nbt.putInt("noDecay", this.noDecay);
             nbt.putLong("mstime", this.mstime);
             
@@ -302,9 +292,16 @@ public class GraveBlockEntity extends BlockEntity {
             super.readNbt(nbt, registryLookup);
             
             // Read basic properties
+            System.out.println("DEBUG: Reading NBT, contains XP key: " + nbt.contains("XP"));
             if (nbt.contains("XP")) {
-                this.xp = nbt.getInt("XP");
-                System.out.println("DEBUG: Read XP from NBT: " + this.xp);
+                int xpValue = nbt.getInt("XP");
+                System.out.println("DEBUG: Read XP from NBT: " + xpValue + " (raw value)");
+                this.xp = xpValue;
+                System.out.println("DEBUG: After setting this.xp, value is: " + this.xp);
+            } else {
+                System.out.println("DEBUG: NBT does not contain XP key!");
+                // List all keys in the NBT
+                System.out.println("DEBUG: Available NBT keys: " + nbt.getKeys());
             }
             
             if (nbt.contains("noDecay")) {
@@ -352,7 +349,7 @@ public class GraveBlockEntity extends BlockEntity {
             // Write basic properties
             nbt.putInt("XP", this.xp);
             System.out.println("DEBUG: Writing XP to NBT: " + this.xp);
-            nbt.putInt("NoDecay", this.noDecay);
+            nbt.putInt("noDecay", this.noDecay);
             nbt.putLong("mstime", this.mstime);
             
             // Write grave owner

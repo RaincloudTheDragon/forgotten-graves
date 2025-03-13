@@ -4,8 +4,39 @@ plugins {
 }
 
 archivesBaseName = project.archives_base_name
-version = "${property("mod_version")}+${stonecutter.current.version}" // include game version in the mod filename
+version = "${property("mod_version")}"
 group = project.maven_group
+
+// Add a task to copy resources to version-specific directories
+task copyResourcesToVersions {
+    doLast {
+        // Get the current version from Stonecutter
+        def currentVersion = stonecutter.current.version
+        
+        // Create the resources directory if it doesn't exist
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        resourcesDir.mkdirs()
+        
+        // Copy the fabric.mod.json file to the version-specific resources directory
+        copy {
+            from "src/main/resources/fabric.mod.json"
+            into resourcesDir
+        }
+        
+        // Copy any other necessary resources
+        copy {
+            from "src/main/resources"
+            include "**/*.png", "**/*.json", "**/*.mcmeta"
+            exclude "fabric.mod.json"  // Exclude fabric.mod.json since we already copied it
+            into resourcesDir
+        }
+        
+        println "Copied resources to ${resourcesDir}"
+    }
+}
+
+// Make sure the resources are copied before the build process starts
+processResources.dependsOn copyResourcesToVersions
 
 repositories {
     mavenCentral()
@@ -22,21 +53,15 @@ repositories {
 
     // Cloth Config
     maven {
-        url "https://maven.shedaniel.me/"
+        url = "https://maven.shedaniel.me/"
     }
 
     // Inventorio
-    repositories {
-        exclusiveContent {
-            forRepository {
-                maven {
-                    name = "Modrinth"
-                    url = "https://api.modrinth.com/maven"
-                }
-            }
-            filter {
-                includeGroup "maven.modrinth"
-            }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
         }
     }
 }
@@ -57,15 +82,25 @@ loom {
     }
 }
 
+// Ensure resources are properly copied to version-specific directories
+task ensureVersionResources(type: Copy) {
+    from "src/main/resources"
+    into "versions/${stonecutter.current.version}/src/main/resources"
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 sourceSets {
     main {
         resources {
             srcDirs += [
-                    'src/main/generated'
+                'src/main/generated'
             ]
         }
     }
 }
+
+// Make sure resources are copied before processing
+processResources.dependsOn ensureVersionResources
 
 dependencies {
     // To change the versions see the gradle.properties file
@@ -76,9 +111,6 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     
-    // Note: The networking module is included in the main fabric-api
-    // We'll use the main fabric-api for now until we have the correct module name
-
     // Cloth/Auto Config
     modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
         exclude(group: "net.fabricmc.fabric-api")
@@ -92,8 +124,9 @@ dependencies {
     modCompileOnly "maven.modrinth:inventorio:${project.inventorio_version}"
 
     // Needed for trinkets
-    modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}")
-    modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}")
+    def ccaVersion = "6.0.0"
+    modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${ccaVersion}")
+    modImplementation include("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
 }
 
 if (stonecutter.current.isActive) { // run configs for non-active version would be invalid
@@ -106,8 +139,22 @@ if (stonecutter.current.isActive) { // run configs for non-active version would 
 }
 
 processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", stonecutter.current.version
+    inputs.property "loader_version", project.loader_version
+    inputs.property "fabric_version", project.fabric_version
+    inputs.property "cloth_config_version", project.cloth_config_version
+
     filesMatching("fabric.mod.json") {
-        expand project.properties
+        expand(
+            "version": project.version + "+" + stonecutter.current.version,
+            "loader_version": project.loader_version,
+            "fabric_version": project.fabric_version,
+            "minecraft_version": stonecutter.current.version,
+            "cloth_config_version": project.cloth_config_version
+        )
     }
 }
 
@@ -115,9 +162,8 @@ tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly
     // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
     it.options.encoding = "UTF-8"
-    it.options.getRelease().set(mod_java_version as Integer)
+    it.options.release = mod_java_version as Integer
 }
 
 java {
@@ -125,8 +171,8 @@ java {
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
-    sourceCompatibility = '21'
-    targetCompatibility = '21'
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
