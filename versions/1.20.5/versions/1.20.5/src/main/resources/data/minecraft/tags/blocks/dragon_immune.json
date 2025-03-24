@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "forgottengraves:grave_forgotten",
+	"forgottengraves:grave_weathered",
+	"forgottengraves:grave_old",
+	"forgottengraves:grave"
+  ]
+}

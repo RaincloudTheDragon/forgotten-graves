@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.6.12'
     id 'maven-publish'
 }
 
@@ -10,32 +10,48 @@ group = project.maven_group
 // Add a task to copy resources to version-specific directories
 task copyResourcesToVersions {
     doLast {
-        // Get the current version from Stonecutter
-        def currentVersion = stonecutter.current.version
+        def version = project.name
+        def targetDir = file("versions/${version}/src/main/resources")
         
-        // Create the resources directory if it doesn't exist
-        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
-        resourcesDir.mkdirs()
-        
-        // Copy the fabric.mod.json file to the version-specific resources directory
-        copy {
-            from "src/main/resources/fabric.mod.json"
-            into resourcesDir
+        // Clean up any existing nested directories
+        fileTree(targetDir).visit { FileVisitDetails details ->
+            if (details.file.isDirectory() && details.file.name == "versions") {
+                details.file.deleteDir()
+            }
         }
         
-        // Copy any other necessary resources
+        // Copy and process resources
         copy {
-            from "src/main/resources"
-            include "**/*.png", "**/*.json", "**/*.mcmeta"
-            exclude "fabric.mod.json"  // Exclude fabric.mod.json since we already copied it
-            into resourcesDir
+            from sourceSets.main.resources
+            into targetDir
+            exclude "**/versions/**"
+            exclude "**/META-INF/**"
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            
+            // Process version variables in fabric.mod.json
+            filesMatching("fabric.mod.json") {
+                expand(
+                    "version": project.version + "+" + version,
+                    "loader_version": project.loader_version,
+                    "fabric_version": project.fabric_version,
+                    "minecraft_version": version,
+                    "cloth_config_version": project.cloth_config_version
+                )
+            }
         }
         
-        println "Copied resources to ${resourcesDir}"
+        // Ensure mixin configuration is copied
+        copy {
+            from "src/main/resources/graves.mixins.json"
+            into targetDir
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        
+        println "Copied resources to ${targetDir}"
     }
 }
 
-// Make sure the resources are copied before the build process starts
+// Make sure resources are copied before processing
 processResources.dependsOn copyResourcesToVersions
 
 repositories {
@@ -80,27 +96,24 @@ loom {
             runDir "build/datagen"
         }
     }
-}
-
-// Ensure resources are properly copied to version-specific directories
-task ensureVersionResources(type: Copy) {
-    from "src/main/resources"
-    into "versions/${stonecutter.current.version}/src/main/resources"
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    
+    // Add mixin configuration
+    mixin {
+        defaultRefmapName.set("graves.refmap.json")
+        useLegacyMixinAp.set(false)
+    }
 }
 
 sourceSets {
     main {
         resources {
             srcDirs += [
-                'src/main/generated'
+                'src/main/generated',
+                'src/main/resources'
             ]
         }
     }
 }
-
-// Make sure resources are copied before processing
-processResources.dependsOn ensureVersionResources
 
 dependencies {
     // To change the versions see the gradle.properties file
@@ -147,7 +160,9 @@ processResources {
     inputs.property "fabric_version", project.fabric_version
     inputs.property "cloth_config_version", project.cloth_config_version
 
-    filesMatching("fabric.mod.json") {
+    from(sourceSets.main.resources) {
+        include "fabric.mod.json"
+        include "graves.mixins.json"
         expand(
             "version": project.version + "+" + stonecutter.current.version,
             "loader_version": project.loader_version,
@@ -156,6 +171,100 @@ processResources {
             "cloth_config_version": project.cloth_config_version
         )
     }
+
+    from(sourceSets.main.resources) {
+        exclude "fabric.mod.json"
+        exclude "graves.mixins.json"
+    }
+}
+
+// Add a task to ensure resources are in the correct location
+task ensureResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        if (!resourcesDir.exists()) {
+            resourcesDir.mkdirs()
+        }
+    }
+}
+
+// Make sure resources are in the correct location before processing
+processResources.dependsOn ensureResources
+
+// Add a task to clean up nested directories
+task cleanupNestedResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def nestedDir = file("versions/${currentVersion}/versions/${currentVersion}")
+        if (nestedDir.exists()) {
+            delete nestedDir
+        }
+    }
+}
+
+// Make sure nested directories are cleaned up before processing
+processResources.dependsOn cleanupNestedResources
+
+// Add a task to ensure mixin configuration is properly included
+task ensureMixinConfig {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        def mixinConfig = file("src/main/resources/graves.mixins.json")
+        if (mixinConfig.exists()) {
+            copy {
+                from mixinConfig
+                into resourcesDir
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure mixin configuration is included before processing
+processResources.dependsOn ensureMixinConfig
+
+// Add a task to ensure mixin configuration is properly formatted
+task formatMixinConfig {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        def mixinConfig = file("${resourcesDir}/graves.mixins.json")
+        if (mixinConfig.exists()) {
+            def json = new groovy.json.JsonSlurper().parse(mixinConfig)
+            def writer = new FileWriter(mixinConfig)
+            new groovy.json.JsonBuilder(json).writeTo(writer)
+            writer.close()
+        }
+    }
+}
+
+// Make sure mixin configuration is properly formatted before processing
+processResources.dependsOn formatMixinConfig
+
+// Add a task to ensure mixin configuration is properly included in the jar
+task ensureMixinConfigInJar {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        def mixinConfig = file("${resourcesDir}/graves.mixins.json")
+        if (mixinConfig.exists()) {
+            copy {
+                from mixinConfig
+                into "${buildDir}/resources/main"
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure mixin configuration is included in the jar before processing
+processResources.dependsOn ensureMixinConfigInJar
+
+// Configure all copy tasks to use EXCLUDE duplicates strategy
+tasks.withType(Copy) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -202,4 +311,81 @@ publishing {
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
     }
+}
+
+// Add a task to ensure resources are in the correct location for sourcesJar
+task ensureSourcesJarResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        if (resourcesDir.exists()) {
+            copy {
+                from resourcesDir
+                into "${buildDir}/resources/main"
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure resources are in the correct location for sourcesJar
+sourcesJar.dependsOn ensureSourcesJarResources
+
+// Add a task to ensure resources are in the correct location for jar
+task ensureJarResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        if (resourcesDir.exists()) {
+            copy {
+                from resourcesDir
+                into "${buildDir}/resources/main"
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure resources are in the correct location for jar
+jar.dependsOn ensureJarResources
+
+// Add a task to ensure resources are in the correct location for remapJar
+task ensureRemapJarResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        if (resourcesDir.exists()) {
+            copy {
+                from resourcesDir
+                into "${buildDir}/resources/main"
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure resources are in the correct location for remapJar
+remapJar.dependsOn ensureRemapJarResources
+
+// Add a task to ensure resources are in the correct location for remapSourcesJar
+task ensureRemapSourcesJarResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def resourcesDir = file("versions/${currentVersion}/src/main/resources")
+        if (resourcesDir.exists()) {
+            copy {
+                from resourcesDir
+                into "${buildDir}/resources/main"
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+}
+
+// Make sure resources are in the correct location for remapSourcesJar
+remapSourcesJar.dependsOn ensureRemapSourcesJarResources
+
+sourcesJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.main.allSource
 }
