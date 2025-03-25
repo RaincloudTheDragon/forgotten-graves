@@ -13,7 +13,6 @@ import me.mgin.graves.block.utility.Permission;
 import me.mgin.graves.block.utility.RetrieveGrave;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.component.ComponentHolder;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;

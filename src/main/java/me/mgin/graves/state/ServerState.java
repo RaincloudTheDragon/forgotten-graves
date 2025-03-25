@@ -13,13 +13,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
-import me.mgin.graves.compat.PersistentStateCompat;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-import me.mgin.graves.api.InventoriesApi;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 

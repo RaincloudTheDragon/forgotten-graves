@@ -4,8 +4,6 @@ import me.mgin.graves.Graves;
 import me.mgin.graves.networking.config.payload.*;
 
 import net.minecraft.util.Identifier;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 
 public class ConfigNetworking {

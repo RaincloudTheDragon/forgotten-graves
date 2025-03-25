@@ -16,15 +16,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import me.mgin.graves.compat.BlockEntityCompat;
 import net.minecraft.registry.RegistryWrapper;
-import me.mgin.graves.util.NbtHelper;
 
 import java.util.Objects;
 

@@ -6,8 +6,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.TagKey;
-
 import java.util.concurrent.CompletableFuture;
 
 public class GraveItemTagGenerator extends FabricTagProvider.ItemTagProvider {
@@ -30,13 +28,6 @@ public class GraveItemTagGenerator extends FabricTagProvider.ItemTagProvider {
     private void addBlock(Item item, FabricTagBuilder... builders) {
         for (FabricTagBuilder b : builders) {
             b.add(item);
-        }
-    }
-
-    @SafeVarargs
-    private void addItemTag(TagKey<Item> tag, FabricTagBuilder... builders) {
-        for (FabricTagBuilder b : builders) {
-            b.addOptionalTag(tag);
         }
     }
 }

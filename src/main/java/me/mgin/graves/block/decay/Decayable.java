@@ -1,6 +1,5 @@
 package me.mgin.graves.block.decay;
 
-import com.mojang.authlib.GameProfile;
 import me.mgin.graves.Graves;
 import me.mgin.graves.api.InventoriesApi;
 import me.mgin.graves.block.entity.GraveBlockEntity;

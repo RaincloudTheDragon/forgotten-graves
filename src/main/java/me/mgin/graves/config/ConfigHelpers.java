@@ -76,7 +76,9 @@ public class ConfigHelpers {
             if (subclass != null) {
                 Field field = subclass.getType().getDeclaredField(option);
                 Object result = field.get(subclass.get(config));
-                return (T) result;
+                @SuppressWarnings("unchecked")
+                T typedResult = (T) result;
+                return typedResult;
             }
         } catch (NullPointerException | NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);

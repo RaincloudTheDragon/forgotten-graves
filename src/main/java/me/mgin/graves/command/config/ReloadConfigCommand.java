@@ -8,7 +8,6 @@ import me.mgin.graves.networking.config.ConfigNetworking;
 import me.mgin.graves.util.Responder;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.mgin.graves.networking.compat.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;

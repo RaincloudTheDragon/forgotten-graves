@@ -9,10 +9,7 @@ import dev.emi.trinkets.api.TrinketsApi;
 import me.mgin.graves.api.InventoriesApi;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Equipment;
 import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.event.GameEvent;
 

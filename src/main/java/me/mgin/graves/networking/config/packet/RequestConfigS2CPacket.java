@@ -2,7 +2,6 @@ package me.mgin.graves.networking.config.packet;
 
 import me.mgin.graves.config.GravesConfig;
 import me.mgin.graves.networking.config.ConfigNetworking;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import me.mgin.graves.networking.compat.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;

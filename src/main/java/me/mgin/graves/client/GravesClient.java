@@ -6,14 +6,14 @@ import me.mgin.graves.config.GravesConfig;
 import me.mgin.graves.networking.config.ConfigNetworking;
 import me.mgin.graves.networking.config.event.ConfigNetworkingEvents;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 
 public class GravesClient implements ClientModInitializer {
     public static GravesConfig SERVER_CONFIG = null;
 
     @Override
     public void onInitializeClient() {
-        BlockEntityRendererRegistry.register(GraveBlocks.GRAVE_BLOCK_ENTITY, GraveBlockEntityRenderer::new);
+        BlockEntityRendererFactories.register(GraveBlocks.GRAVE_BLOCK_ENTITY, GraveBlockEntityRenderer::new);
         ConfigNetworkingEvents.registerClientEvents();
         ConfigNetworking.registerS2CPackets();
     }

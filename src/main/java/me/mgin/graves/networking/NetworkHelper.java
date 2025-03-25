@@ -1,9 +1,5 @@
 package me.mgin.graves.networking;
 
-import me.mgin.graves.Graves;
-import me.mgin.graves.networking.config.ConfigNetworking;
-import me.mgin.graves.networking.config.payload.*;
-
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.network.packet.CustomPayload;

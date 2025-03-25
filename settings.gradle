@@ -26,3 +26,10 @@ stonecutter {
 
     create rootProject
 }
+
+// Include version-specific projects
+include ':1.20.5'
+project(':1.20.5').projectDir = file('versions/1.20.5')
+
+include ':1.20.6'
+project(':1.20.6').projectDir = file('versions/1.20.6')

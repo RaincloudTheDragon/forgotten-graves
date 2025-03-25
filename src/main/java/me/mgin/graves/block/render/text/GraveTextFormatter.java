@@ -16,7 +16,7 @@ public class GraveTextFormatter {
     private boolean strikethrough;
     private boolean obfuscated;
 
-    public void GraveTextFormatter() {
+    public GraveTextFormatter() {
         resetFormatting();
     }
 

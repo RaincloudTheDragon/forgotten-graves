@@ -2,8 +2,7 @@ package me.mgin.graves.block;
 
 import me.mgin.graves.block.decay.DecayingGrave.BlockDecay;
 import me.mgin.graves.block.entity.GraveBlockEntity;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -32,7 +31,7 @@ public class GraveBlocks {
     private static GraveBlockBase createGrave(BlockDecay blockDecay, String blockID) {
         return new GraveBlockBase(
             blockDecay,
-            FabricBlockSettings.create().strength(0.8f, 3600000.0F),
+            AbstractBlock.Settings.create().strength(0.8f, 3600000.0F),
             blockID
         );
     }
@@ -48,9 +47,9 @@ public class GraveBlocks {
             Registry.register(Registries.BLOCK, new Identifier(MOD_ID, grave.getBlockID()), grave);
         }
 
-        BlockEntityType<GraveBlockEntity> blockEntityType = FabricBlockEntityTypeBuilder.create(GraveBlockEntity::new,
+        BlockEntityType<GraveBlockEntity> blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
                 GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-            .build(null);
+            .build();
 
         GraveBlocks.GRAVE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, MOD_ID + ":" + BRAND_BLOCK,
             blockEntityType);

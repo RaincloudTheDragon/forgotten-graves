@@ -20,7 +20,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import me.mgin.graves.compat.ProfileCompat;
 import net.minecraft.util.Identifier;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
@@ -35,7 +34,7 @@ import java.lang.reflect.Constructor;
 //? if >1.20.5 {
 /*import net.minecraft.component.type.ProfileComponent;
 *///?} else {
-import net.minecraft.nbt.NbtHelper;
+//?}import net.minecraft.nbt.NbtHelper;
 //?}
 
 public class GraveSkullRenderer {
@@ -304,24 +303,6 @@ public class GraveSkullRenderer {
             case "PIGLIN" -> RenderLayer.getEntityCutoutNoCull(new Identifier("textures/entity/piglin/piglin.png"));
             default -> RenderLayer.getEntityCutoutNoCull(new Identifier("textures/entity/skeleton/skeleton.png"));
         };
-    }
-
-    /**
-     * Converts a UUID to a byte array.
-     */
-    private static byte[] getBytesFromUUID(UUID uuid) {
-        long msb = uuid.getMostSignificantBits();
-        long lsb = uuid.getLeastSignificantBits();
-        byte[] buffer = new byte[16];
-        
-        for (int i = 0; i < 8; i++) {
-            buffer[i] = (byte) (msb >>> 8 * (7 - i));
-        }
-        for (int i = 8; i < 16; i++) {
-            buffer[i] = (byte) (lsb >>> 8 * (15 - i));
-        }
-        
-        return buffer;
     }
 
     /**
