@@ -10,23 +10,27 @@ group = project.maven_group
 // Add a task to copy resources to version-specific directories
 task copyResourcesToVersions {
     doLast {
-        def version = project.name
+        def version = stonecutter.current.version
         def targetDir = file("versions/${version}/src/main/resources")
         
         // Clean up any existing nested directories
-        fileTree(targetDir).visit { FileVisitDetails details ->
-            if (details.file.isDirectory() && details.file.name == "versions") {
-                details.file.deleteDir()
-            }
+        def nestedDir = file("versions/${version}/versions")
+        if (nestedDir.exists()) {
+            nestedDir.deleteDir()
         }
         
-        // Copy and process resources
+        // Ensure target directory exists and is clean
+        if (targetDir.exists()) {
+            targetDir.deleteDir()
+        }
+        targetDir.mkdirs()
+        
+        // Copy all resources
         copy {
             from sourceSets.main.resources
             into targetDir
             exclude "**/versions/**"
-            exclude "**/META-INF/**"
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
             
             // Process version variables in fabric.mod.json
             filesMatching("fabric.mod.json") {
@@ -40,19 +44,27 @@ task copyResourcesToVersions {
             }
         }
         
-        // Ensure mixin configuration is copied
-        copy {
-            from "src/main/resources/graves.mixins.json"
-            into targetDir
-            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-        
         println "Copied resources to ${targetDir}"
     }
 }
 
 // Make sure resources are copied before processing
 processResources.dependsOn copyResourcesToVersions
+
+// Add a task to clean up nested directories
+task cleanupNestedResources {
+    doLast {
+        def currentVersion = stonecutter.current.version
+        def nestedDir = file("versions/${currentVersion}/versions")
+        if (nestedDir.exists()) {
+            nestedDir.deleteDir()
+            println "Cleaned up nested directory: ${nestedDir}"
+        }
+    }
+}
+
+// Make sure nested directories are cleaned up before copying resources
+copyResourcesToVersions.dependsOn cleanupNestedResources
 
 repositories {
     mavenCentral()
@@ -152,7 +164,7 @@ if (stonecutter.current.isActive) { // run configs for non-active version would 
 }
 
 processResources {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     
     inputs.property "version", project.version
     inputs.property "minecraft_version", stonecutter.current.version
@@ -161,20 +173,69 @@ processResources {
     inputs.property "cloth_config_version", project.cloth_config_version
 
     from(sourceSets.main.resources) {
-        include "fabric.mod.json"
-        include "graves.mixins.json"
-        expand(
-            "version": project.version + "+" + stonecutter.current.version,
-            "loader_version": project.loader_version,
-            "fabric_version": project.fabric_version,
-            "minecraft_version": stonecutter.current.version,
-            "cloth_config_version": project.cloth_config_version
-        )
+        include "**/*"
+        
+        // Process version variables in fabric.mod.json
+        filesMatching("fabric.mod.json") {
+            expand(
+                "version": project.version + "+" + stonecutter.current.version,
+                "loader_version": project.loader_version,
+                "fabric_version": project.fabric_version,
+                "minecraft_version": stonecutter.current.version,
+                "cloth_config_version": project.cloth_config_version
+            )
+        }
+    }
+}
+
+// Configure all copy tasks to use INCLUDE duplicates strategy
+tasks.withType(Copy) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    it.options.encoding = "UTF-8"
+    it.options.release = mod_java_version as Integer
+}
+
+java {
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            // add all the jars that should be included when publishing to maven
+            artifact(remapJar) {
+                builtBy remapJar
+            }
+            artifact(sourcesJar) {
+                builtBy remapSourcesJar
+            }
+        }
     }
 
-    from(sourceSets.main.resources) {
-        exclude "fabric.mod.json"
-        exclude "graves.mixins.json"
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
     }
 }
 
@@ -186,25 +247,20 @@ task ensureResources {
         if (!resourcesDir.exists()) {
             resourcesDir.mkdirs()
         }
+        
+        // Copy assets
+        copy {
+            from "src/main/resources"
+            into resourcesDir
+            include "assets/**"
+            include "data/**"
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
     }
 }
 
 // Make sure resources are in the correct location before processing
 processResources.dependsOn ensureResources
-
-// Add a task to clean up nested directories
-task cleanupNestedResources {
-    doLast {
-        def currentVersion = stonecutter.current.version
-        def nestedDir = file("versions/${currentVersion}/versions/${currentVersion}")
-        if (nestedDir.exists()) {
-            delete nestedDir
-        }
-    }
-}
-
-// Make sure nested directories are cleaned up before processing
-processResources.dependsOn cleanupNestedResources
 
 // Add a task to ensure mixin configuration is properly included
 task ensureMixinConfig {
@@ -261,57 +317,6 @@ task ensureMixinConfigInJar {
 
 // Make sure mixin configuration is included in the jar before processing
 processResources.dependsOn ensureMixinConfigInJar
-
-// Configure all copy tasks to use EXCLUDE duplicates strategy
-tasks.withType(Copy) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    it.options.encoding = "UTF-8"
-    it.options.release = mod_java_version as Integer
-}
-
-java {
-    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-    // if it is present.
-    // If you remove this line, sources will not be generated.
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}" }
-    }
-}
-
-// configure the maven publication
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            // add all the jars that should be included when publishing to maven
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
-        }
-    }
-
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
-    }
-}
 
 // Add a task to ensure resources are in the correct location for sourcesJar
 task ensureSourcesJarResources {

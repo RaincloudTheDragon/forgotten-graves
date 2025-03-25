@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.mgin.graves.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "graves.refmap.json",
+  "mixins": [
+    "ExplosionMixin",
+    "PlayerEntityMixin",
+    "SetBlockCommandMixin"
+  ],
+  "client": [
+    "ClientPlayerInteractionManagerMixin"
+  ],
+  "plugin": "me.mgin.graves.mixin.GravesMixinPlugin",
+  "mixins.create": [
+    "BlockBreakingKineticBlockEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
