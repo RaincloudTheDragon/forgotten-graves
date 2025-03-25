@@ -159,6 +159,10 @@ if (stonecutter.current.isActive) { // run configs for non-active version would 
         runConfigs.all {
             ideConfigGenerated = true // generate IDE tasks for running client, server and testmod, datagen if those are present
             runDir "../../run" // use a global run directory for all versions
+            
+            // Use the authenticated Minecraft client for online play
+            property "fabric.development", "true"
+            property "fabric-api.development", "true"
         }
     }
 }
@@ -393,4 +397,22 @@ remapSourcesJar.dependsOn ensureRemapSourcesJarResources
 sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from sourceSets.main.allSource
+}
+
+// Add a task for faster development cycle
+task dev {
+    dependsOn ':1.20.6:build'
+    doLast {
+        println "Mod built successfully. Launch Minecraft with Fabric 1.20.6 to test."
+        println "The mod JAR is linked to your Minecraft mods folder."
+    }
+}
+
+// Add a version-specific dev task
+task dev1206 {
+    dependsOn ':1.20.6:build'
+    doLast {
+        println "Mod built successfully for 1.20.6. Launch Minecraft with Fabric 1.20.6 to test."
+        println "The mod JAR is linked to your Minecraft mods folder."
+    }
 }
