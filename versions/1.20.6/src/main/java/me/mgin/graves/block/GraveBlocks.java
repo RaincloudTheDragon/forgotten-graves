@@ -47,9 +47,16 @@ public class GraveBlocks {
             Registry.register(Registries.BLOCK, new Identifier(MOD_ID, grave.getBlockID()), grave);
         }
 
-        BlockEntityType<GraveBlockEntity> blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
-                GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-            .build();
+        BlockEntityType<GraveBlockEntity> blockEntityType;
+        try {
+            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
+                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
+                .build(null);
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
+                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
+                .build();
+        }
 
         GraveBlocks.GRAVE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, MOD_ID + ":" + BRAND_BLOCK,
             blockEntityType);

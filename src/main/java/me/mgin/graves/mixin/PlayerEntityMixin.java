@@ -7,18 +7,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity {
-
-    @Shadow
-    @Final
-    private PlayerInventory inventory;
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
@@ -26,7 +20,9 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Redirect(method = "dropInventory", at = @At(value = "INVOKE", target = "net.minecraft.entity.player.PlayerInventory.dropAll()V"))
     private void dropAll(PlayerInventory inventory) {
-        PlayerEntity player = this.inventory.player;
+        // Cast 'this' to PlayerEntity since we're in a mixin
+        PlayerEntity player = (PlayerEntity)(Object)this;
+        
         boolean forgottenGravesEnabled = GravesConfig.resolve("graves", player.getGameProfile());
         boolean playerCanPlaceBlocks = player.canModifyAt(player.getWorld(), player.getBlockPos());
 
@@ -36,7 +32,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
         // Do not place graves if its disabled or the player can't place/break blocks in the area
         if (!forgottenGravesEnabled || !playerCanPlaceBlocks) {
-            this.inventory.dropAll();
+            inventory.dropAll();
             return;
         }
 

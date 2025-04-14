@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryWrapper.WrapperLookup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.UUID;
@@ -25,17 +26,36 @@ public class SerializationHelper {
      */
     public static WrapperLookup getWrapperLookup() {
         try {
-            // Try to get it from DynamicRegistryManager.EMPTY using reflection
-            Method getWrapperLookupMethod = DynamicRegistryManager.class.getMethod("getWrapperLookup");
-            return (WrapperLookup) getWrapperLookupMethod.invoke(DynamicRegistryManager.EMPTY);
-        } catch (Exception e) {
+            // First, try getting it directly from DynamicRegistryManager.EMPTY
             try {
-                // Try to get it from a static field
-                return (WrapperLookup) DynamicRegistryManager.class.getField("EMPTY_WRAPPER_LOOKUP").get(null);
-            } catch (Exception e2) {
-                System.err.println("Failed to get WrapperLookup: " + e2.getMessage());
+                // This is the preferred approach in newer versions
+                // Using reflection because the method may not exist in all versions
+                Method getWrapperLookupMethod = DynamicRegistryManager.class.getMethod("getWrapperLookup");
+                return (WrapperLookup) getWrapperLookupMethod.invoke(DynamicRegistryManager.EMPTY);
+            } catch (Exception e) {
+                // Ignore and try other approaches
+            }
+            
+            // Try to get the static field
+            try {
+                Field field = DynamicRegistryManager.class.getField("EMPTY_WRAPPER_LOOKUP");
+                return (WrapperLookup) field.get(null);
+            } catch (Exception e) {
+                // Ignore and try next approach
+            }
+            
+            // Try alternative field names or other classes that might have a lookup
+            try {
+                Field field = Registries.class.getField("WRAPPER_LOOKUP");
+                return (WrapperLookup) field.get(null);
+            } catch (Exception e) {
+                // Final fallback - just log an informational message instead of error
+                System.out.println("[SerializationHelper] Unable to get WrapperLookup through standard methods - will use basic serialization");
                 return null;
             }
+        } catch (Exception e) {
+            System.out.println("[SerializationHelper] All attempts to get WrapperLookup failed - using basic serialization");
+            return null;
         }
     }
 
@@ -181,61 +201,8 @@ public class SerializationHelper {
                         if (itemNbt.contains("Slot")) {
                             int slot = itemNbt.getInt("Slot");
 
-                            // Create the ItemStack using reflection
-                            ItemStack stack = ItemStack.EMPTY;
-                            try {
-                                if (registryLookup != null) {
-                                    try {
-                                        // Try to use the method with registry lookup
-                                        Method fromNbtMethod = ItemStack.class.getMethod("fromNbt", NbtCompound.class, WrapperLookup.class);
-                                        stack = (ItemStack) fromNbtMethod.invoke(null, itemNbt, registryLookup);
-                                    } catch (Exception e) {
-                                        // Fall back to the old method
-                                        Method fromNbtMethod = ItemStack.class.getMethod("fromNbt", NbtCompound.class);
-                                        stack = (ItemStack) fromNbtMethod.invoke(null, itemNbt);
-                                    }
-                                } else {
-                                    // Fallback for when registryLookup is null
-                                    try {
-                                        // Get the item from the registry
-                                        Identifier itemId = new Identifier(itemNbt.getString("id"));
-                                        stack = new ItemStack(Registries.ITEM.get(itemId), itemNbt.getInt("Count"));
-                                        
-                                        // Apply damage if present
-                                        if (itemNbt.contains("Damage")) {
-                                            stack.setDamage(itemNbt.getInt("Damage"));
-                                        }
-                                        
-                                        // Apply NBT data if present
-                                        if (itemNbt.contains("tag")) {
-                                            try {
-                                                Method setNbtMethod = ItemStack.class.getMethod("setNbt", NbtCompound.class);
-                                                setNbtMethod.invoke(stack, itemNbt.getCompound("tag").copy());
-                                            } catch (Exception e) {
-                                                // Ignore if method doesn't exist
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        System.err.println("Error reading item from NBT: " + e.getMessage());
-                                        stack = ItemStack.EMPTY;
-                                    }
-                                }
-                            } catch (Exception e) {
-                                System.err.println("Error creating ItemStack from NBT: " + e.getMessage());
-                                
-                                // Try a more basic approach
-                                if (itemNbt.contains("id")) {
-                                    try {
-                                        String id2 = itemNbt.getString("id");
-                                        int count = itemNbt.contains("Count") ? itemNbt.getInt("Count") : 1;
-                                        
-                                        // Try to get the item from the registry
-                                        stack = new ItemStack(Registries.ITEM.get(new Identifier(id2)), count);
-                                    } catch (Exception ex) {
-                                        System.err.println("Failed to create basic ItemStack: " + ex.getMessage());
-                                    }
-                                }
-                            }
+                            // Create the ItemStack using multiple approaches
+                            ItemStack stack = deserializeItemStack(itemNbt, registryLookup);
 
                             if (slot >= 0 && slot < inventory.size()) {
                                 inventory.set(slot, stack);
@@ -245,12 +212,93 @@ public class SerializationHelper {
 
                     // Add the inventory to the map
                     inventories.put(id, inventory);
-                    System.out.println("Successfully loaded inventory '" + id + "' with " + size + " slots");
+                    System.out.println("[SerializationHelper] Successfully loaded inventory '" + id + "' with " + size + " slots");
                 }
             } catch (Exception e) {
-                System.err.println("Error reading inventory '" + id + "': " + e.getMessage());
+                System.out.println("[SerializationHelper] Error reading inventory '" + id + "': " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Deserializes an ItemStack from NBT using multiple approaches for compatibility
+     */
+    private static ItemStack deserializeItemStack(NbtCompound itemNbt, WrapperLookup registryLookup) {
+        // Try multiple approaches to deserialize the ItemStack
+        try {
+            // Try using reflection with direct fromNbt method first
+            try {
+                Method fromNbtMethod = ItemStack.class.getMethod("fromNbt", NbtCompound.class);
+                return (ItemStack) fromNbtMethod.invoke(null, itemNbt);
+            } catch (Exception e) {
+                // Continue to next approach
+            }
+            
+            // Try using reflection with registry lookup
+            if (registryLookup != null) {
+                try {
+                    Method fromNbtMethod = ItemStack.class.getMethod("fromNbt", NbtCompound.class, WrapperLookup.class);
+                    return (ItemStack) fromNbtMethod.invoke(null, itemNbt, registryLookup);
+                } catch (Exception e) {
+                    // Continue to next approach
+                }
+            }
+            
+            // Manual fallback: create the item from registry and apply properties
+            return createItemStackManually(itemNbt);
+        } catch (Exception e) {
+            System.out.println("[SerializationHelper] All ItemStack deserialization methods failed: " + e.getMessage());
+            // Last resort: return empty stack
+            return ItemStack.EMPTY;
+        }
+    }
+
+    /**
+     * Creates an ItemStack manually from NBT when all other methods fail
+     */
+    private static ItemStack createItemStackManually(NbtCompound itemNbt) {
+        try {
+            // Basic approach: get item from registry
+            if (itemNbt.contains("id")) {
+                String idString = itemNbt.getString("id");
+                Identifier itemId = new Identifier(idString);
+                
+                // Get count, default to 1
+                int count = itemNbt.contains("Count") ? 
+                           (itemNbt.get("Count").getType() == NbtElement.BYTE_TYPE ? 
+                            itemNbt.getByte("Count") : itemNbt.getInt("Count")) : 1;
+                
+                // Create the stack
+                ItemStack stack = new ItemStack(Registries.ITEM.get(itemId), count);
+                
+                // Apply damage if present
+                if (itemNbt.contains("Damage")) {
+                    stack.setDamage(itemNbt.getInt("Damage"));
+                }
+                
+                // Apply tag if present
+                if (itemNbt.contains("tag")) {
+                    try {
+                        Method setNbtMethod = ItemStack.class.getMethod("setNbt", NbtCompound.class);
+                        setNbtMethod.invoke(stack, itemNbt.getCompound("tag").copy());
+                    } catch (Exception e) {
+                        // If setNbt fails, we could apply critical tags manually
+                        // This would require custom code for each important tag type
+                        // For now, just log that we couldn't apply complex NBT data
+                        if (itemNbt.contains("tag") && !itemNbt.getCompound("tag").isEmpty()) {
+                            System.out.println("[SerializationHelper] Could not apply complex NBT data to item: " + 
+                                Registries.ITEM.getId(stack.getItem()));
+                        }
+                    }
+                }
+                
+                return stack;
+            }
+        } catch (Exception e) {
+            System.out.println("[SerializationHelper] Error in manual ItemStack creation: " + e.getMessage());
+        }
+        
+        return ItemStack.EMPTY;
     }
 
     /**
@@ -332,9 +380,18 @@ public class SerializationHelper {
         }
         
         try {
+            // Try direct serialization first without reflection (most modern approach)
+            try {
+                // Must use reflection for this since method signature varies by version
+                Method writeNbtDirectMethod = ItemStack.class.getMethod("writeNbt", NbtCompound.class);
+                writeNbtDirectMethod.invoke(stack, nbt);
+                return nbt;
+            } catch (Exception directException) {
+                // Continue to reflection-based approaches
+            }
+            
             // Try using the component-based approach first (1.20.5+)
             try {
-                // Get the ItemStack.writeComponentsNbt method
                 Method writeComponentsNbtMethod = ItemStack.class.getMethod("writeComponentsNbt", NbtCompound.class);
                 writeComponentsNbtMethod.invoke(stack, nbt);
                 return nbt;
@@ -354,35 +411,46 @@ public class SerializationHelper {
             }
             
             // Fall back to the basic approach (pre-1.20)
-            Method writeNbtMethod = ItemStack.class.getMethod("writeNbt", NbtCompound.class);
-            writeNbtMethod.invoke(stack, nbt);
-            return nbt;
-        } catch (Exception e) {
-            System.err.println("Error serializing item: " + e.getMessage());
-            
-            // Last resort: manually write basic item data
             try {
-                // Get the item ID
-                Identifier id = Registries.ITEM.getId(stack.getItem());
-                nbt.putString("id", id.toString());
-                nbt.putByte("Count", (byte) stack.getCount());
-                
-                // Try to get damage value if applicable
-                try {
-                    Method getDamageMethod = stack.getClass().getMethod("getDamage");
-                    int damage = (int) getDamageMethod.invoke(stack);
-                    if (damage > 0) {
-                        nbt.putInt("Damage", damage);
-                    }
-                } catch (Exception ignored) {
-                    // Item doesn't have damage
-                }
-                
+                Method writeNbtMethod = ItemStack.class.getMethod("writeNbt", NbtCompound.class);
+                writeNbtMethod.invoke(stack, nbt);
                 return nbt;
-            } catch (Exception ex) {
-                System.err.println("Failed to manually serialize item: " + ex.getMessage());
+            } catch (Exception e) {
+                // If all reflection methods fail, use a manual approach
+                manualItemSerialization(stack, nbt);
                 return nbt;
             }
+        } catch (Exception e) {
+            System.out.println("[SerializationHelper] Error serializing item, using fallback serialization: " + e.getMessage());
+            // Manual fallback serialization
+            manualItemSerialization(stack, nbt);
+            return nbt;
+        }
+    }
+
+    /**
+     * Manual fallback for item serialization when all other methods fail
+     */
+    private static void manualItemSerialization(ItemStack stack, NbtCompound nbt) {
+        // Store essential item data manually
+        Identifier id = Registries.ITEM.getId(stack.getItem());
+        nbt.putString("id", id.toString());
+        nbt.putInt("Count", stack.getCount());
+        
+        // Store damage if applicable
+        if (stack.isDamaged()) {
+            nbt.putInt("Damage", stack.getDamage());
+        }
+        
+        // Try to get the tag compound
+        try {
+            Method getNbtMethod = ItemStack.class.getMethod("getNbt");
+            NbtCompound tag = (NbtCompound) getNbtMethod.invoke(stack);
+            if (tag != null && !tag.isEmpty()) {
+                nbt.put("tag", tag.copy());
+            }
+        } catch (Exception ignored) {
+            // If we can't get the tag compound, just continue without it
         }
     }
 } 

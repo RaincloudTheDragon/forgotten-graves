@@ -2,25 +2,33 @@ package me.mgin.graves.networking;
 
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
+import me.mgin.graves.networking.compat.ServerPlayNetworking;
+import me.mgin.graves.networking.compat.ClientPlayNetworking;
 
 public class NetworkHelper {
-    public static void sendToPlayer(ServerPlayerEntity player, CustomPayload payload) {
-        // TODO: Implement when Fabric API for 1.20.5 is properly set up
-        // For now, we'll leave this as a placeholder
-        // In 1.20.5, we need to use ServerPlayNetworking.send(player, payload)
+    /**
+     * Sends a packet to a player using the identifier and buffer approach
+     */
+    public static void sendToPlayer(ServerPlayerEntity player, Identifier channel, PacketByteBuf buf) {
+        // Delegate to our compatibility layer
+        ServerPlayNetworking.send(player, channel, buf);
     }
     
-    // Temporary compatibility method to support old code
-    public static void sendToPlayer(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
-        // TODO: Implement when Fabric API for 1.20.5 is properly set up
-        // This is a compatibility method for old code
+    /**
+     * Sends a packet to the server using the identifier and buffer approach
+     */
+    public static void sendToServer(Identifier channel, PacketByteBuf buf) {
+        // Delegate to our compatibility layer
+        ClientPlayNetworking.send(channel, buf);
     }
     
-    // Temporary compatibility method for client-to-server packets
+    /**
+     * Generic method to handle object packet ID
+     */
     public static void sendToServer(Object packetId, PacketByteBuf buf) {
-        // TODO: Implement when Fabric API for 1.20.5 is properly set up
-        // This is a compatibility method for old code
+        if (packetId instanceof Identifier) {
+            sendToServer((Identifier)packetId, buf);
+        }
     }
 }

@@ -21,12 +21,12 @@ import java.util.function.Consumer;
 
 public class GraveRecipeGenerator extends FabricRecipeProvider {
     //? if >=1.20.5 {
-    public GraveRecipeGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
-        super(output, lookup);
+    public GraveRecipeGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        super(output, registryLookup);
     }
     //?} else {
-    /*public GraveRecipeGenerator(FabricDataOutput output) {
-        super(output);
+    /*public GraveRecipeGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+        super(output, lookup);
     }
     *///?}
 

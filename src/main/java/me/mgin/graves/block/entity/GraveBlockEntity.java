@@ -253,9 +253,7 @@ public class GraveBlockEntity extends BlockEntity {
             super.writeNbt(nbt, registryLookup);
             
             // Write basic properties
-            System.out.println("DEBUG: About to write XP to NBT: " + this.xp + " (this.xp value)");
             nbt.putInt("XP", this.xp);
-            System.out.println("DEBUG: After writing XP to NBT, checking value: " + nbt.getInt("XP"));
             nbt.putInt("noDecay", this.noDecay);
             nbt.putLong("mstime", this.mstime);
             
@@ -277,10 +275,10 @@ public class GraveBlockEntity extends BlockEntity {
             // Write inventories
             me.mgin.graves.compat.SerializationHelper.writeInventories(nbt, this.inventories, registryLookup);
             
-            // Debug output
-            System.out.println("Successfully wrote grave NBT with " + this.inventories.size() + " inventories");
+            // Debug output only when verbose logging is needed
+            System.out.println("[ForgottenGraves] Wrote grave NBT with " + this.inventories.size() + " inventories");
         } catch (Exception e) {
-            System.err.println("Error in writeNbt: " + e.getMessage());
+            System.out.println("[ForgottenGraves] Error in writeNbt: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -292,16 +290,8 @@ public class GraveBlockEntity extends BlockEntity {
             super.readNbt(nbt, registryLookup);
             
             // Read basic properties
-            System.out.println("DEBUG: Reading NBT, contains XP key: " + nbt.contains("XP"));
             if (nbt.contains("XP")) {
-                int xpValue = nbt.getInt("XP");
-                System.out.println("DEBUG: Read XP from NBT: " + xpValue + " (raw value)");
-                this.xp = xpValue;
-                System.out.println("DEBUG: After setting this.xp, value is: " + this.xp);
-            } else {
-                System.out.println("DEBUG: NBT does not contain XP key!");
-                // List all keys in the NBT
-                System.out.println("DEBUG: Available NBT keys: " + nbt.getKeys());
+                this.xp = nbt.getInt("XP");
             }
             
             if (nbt.contains("noDecay")) {
@@ -328,13 +318,13 @@ public class GraveBlockEntity extends BlockEntity {
             // Read inventories
             me.mgin.graves.compat.SerializationHelper.readInventories(nbt, this.inventories, registryLookup);
             
-            // Debug output
-            System.out.println("Successfully read grave NBT with " + this.inventories.size() + " inventories");
+            // Debug output only when verbose logging is needed
+            System.out.println("[ForgottenGraves] Read grave NBT with " + this.inventories.size() + " inventories");
             
             // Mark as dirty to ensure changes are saved
             this.markDirty();
         } catch (Exception e) {
-            System.err.println("Error in readNbt: " + e.getMessage());
+            System.out.println("[ForgottenGraves] Error in readNbt: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -348,7 +338,6 @@ public class GraveBlockEntity extends BlockEntity {
         try {
             // Write basic properties
             nbt.putInt("XP", this.xp);
-            System.out.println("DEBUG: Writing XP to NBT: " + this.xp);
             nbt.putInt("noDecay", this.noDecay);
             nbt.putLong("mstime", this.mstime);
             
@@ -390,9 +379,9 @@ public class GraveBlockEntity extends BlockEntity {
             me.mgin.graves.compat.SerializationHelper.writeInventories(nbt, this.inventories, registryLookup);
             
             // Debug output
-            System.out.println("Successfully created grave NBT with " + this.inventories.size() + " inventories");
+            System.out.println("[ForgottenGraves] Created grave NBT with " + this.inventories.size() + " inventories");
         } catch (Exception e) {
-            System.err.println("Error in toNbt: " + e.getMessage());
+            System.out.println("[ForgottenGraves] Error in toNbt: " + e.getMessage());
             e.printStackTrace();
         }
         

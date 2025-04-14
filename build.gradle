@@ -107,6 +107,28 @@ loom {
 
             runDir "build/datagen"
         }
+        
+        client {
+            // Modern authentication for Microsoft accounts
+            vmArg "-Dfabric.loom.modern.auth=true"
+            vmArg "-Dfabric.loom.auth.type=microsoft"
+            
+            // Optional: add this if you want to be able to debug the game
+            vmArg "-Dfabric.log.level=debug"
+            
+            // Use clientBranchName property to make breakpoints easier to manage for multiple versions
+            property "fabric.loom.launch.use-modern-auth", "true"
+            property "fabric.loom.launch.auth-type", "microsoft"
+        }
+
+        // This adds a run config for GameTest api
+        gametest {
+            server()
+            name "Game Test"
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/test_results.xml"
+            runDir "build/gametest"
+        }
     }
     
     // Add mixin configuration
