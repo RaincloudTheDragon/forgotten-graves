@@ -47,7 +47,6 @@ public class GraveBlocks {
             Registry.register(Registries.BLOCK, new Identifier(MOD_ID, grave.getBlockID()), grave);
         }
 
-        // Create BlockEntityType with Type.DUMMY for 1.20.5+
         BlockEntityType<GraveBlockEntity> blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
                 GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
             .build(com.mojang.datafixers.types.Type.DUMMY);

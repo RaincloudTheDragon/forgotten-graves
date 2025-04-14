@@ -1,6 +1,7 @@
 package net.fabricmc.fabric.api.datagen.v1.provider;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.data.DataProvider;
 import net.minecraft.data.server.recipe.RecipeExporter;
 import net.minecraft.item.Item;
 import net.minecraft.predicate.item.ItemPredicate;
@@ -13,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  * Temporary compatibility class for FabricRecipeProvider
  * This allows compilation with both 1.20.6+ and pre-1.20.6 code
  */
-public class FabricRecipeProvider {
+public class FabricRecipeProvider implements DataProvider {
     protected final FabricDataOutput output;
     
     /**
@@ -56,5 +57,21 @@ public class FabricRecipeProvider {
      */
     public static ItemPredicate conditionsFromTag(TagKey<Item> tag) {
         return ItemPredicate.Builder.create().tag(tag).build();
+    }
+    
+    /**
+     * Required by DataProvider interface
+     */
+    @Override
+    public String getName() {
+        return "Recipes";
+    }
+    
+    /**
+     * Required by DataProvider interface
+     */
+    @Override
+    public CompletableFuture<?> run(DataProvider.DataWriter writer) {
+        return CompletableFuture.completedFuture(null);
     }
 } 
