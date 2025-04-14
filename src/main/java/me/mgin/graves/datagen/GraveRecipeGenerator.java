@@ -5,24 +5,18 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.server.recipe.ShapedRecipeJsonBuilder;
 import net.minecraft.item.Items;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.book.RecipeCategory;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 
 //? if >1.20.1 {
 import net.minecraft.data.server.recipe.RecipeExporter;
 
-import java.util.concurrent.CompletableFuture;
-//?} else {
-/*import net.minecraft.data.server.recipe.RecipeJsonProvider;
-import java.util.function.Consumer;
-*///?}
-
 public class GraveRecipeGenerator extends FabricRecipeProvider {
     //? if >=1.20.5 {
-    public GraveRecipeGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
-        super(output, registryLookup);
+    public GraveRecipeGenerator(FabricDataOutput output) {
+        super(output);
     }
     //?} else {
     /*public GraveRecipeGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
@@ -43,11 +37,11 @@ public class GraveRecipeGenerator extends FabricRecipeProvider {
             .input('D', Ingredient.ofItems(Items.DIRT))
             .criterion(
                 FabricRecipeProvider.hasItem(Items.DIRT),
-                FabricRecipeProvider.conditionsFromItem(Items.DIRT)
+                ItemPredicate.convertToCriterion(FabricRecipeProvider.conditionsFromItem(Items.DIRT))
             )
             .criterion(
                 "stone_tool_materials",
-                FabricRecipeProvider.conditionsFromTag(ItemTags.STONE_TOOL_MATERIALS)
+                ItemPredicate.convertToCriterion(FabricRecipeProvider.conditionsFromTag(ItemTags.STONE_TOOL_MATERIALS))
             )
             .offerTo(exporter);
     }

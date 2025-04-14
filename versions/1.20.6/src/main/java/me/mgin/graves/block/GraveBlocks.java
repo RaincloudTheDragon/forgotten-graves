@@ -47,16 +47,10 @@ public class GraveBlocks {
             Registry.register(Registries.BLOCK, new Identifier(MOD_ID, grave.getBlockID()), grave);
         }
 
-        BlockEntityType<GraveBlockEntity> blockEntityType;
-        try {
-            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
-                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-                .build(null);
-        } catch (NoSuchMethodError | UnsupportedOperationException e) {
-            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
-                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-                .build();
-        }
+        // Create BlockEntityType with Type.DUMMY for 1.20.6+
+        BlockEntityType<GraveBlockEntity> blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
+                GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
+            .build(com.mojang.datafixers.types.Type.DUMMY);
 
         GraveBlocks.GRAVE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, MOD_ID + ":" + BRAND_BLOCK,
             blockEntityType);

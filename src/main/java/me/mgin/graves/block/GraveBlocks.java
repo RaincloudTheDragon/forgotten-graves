@@ -3,9 +3,7 @@ package me.mgin.graves.block;
 import me.mgin.graves.block.decay.DecayingGrave.BlockDecay;
 import me.mgin.graves.block.entity.GraveBlockEntity;
 import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.BlockEntityType.BlockEntityFactory;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -49,19 +47,10 @@ public class GraveBlocks {
             Registry.register(Registries.BLOCK, new Identifier(MOD_ID, grave.getBlockID()), grave);
         }
 
-        // Create BlockEntityType - API changed in 1.20.5/1.20.6
-        BlockEntityType<GraveBlockEntity> blockEntityType;
-        try {
-            // For 1.20.5/1.20.6, we need to pass a Type parameter
-            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
-                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-                .build(null);
-        } catch (NoSuchMethodError | UnsupportedOperationException e) {
-            // Fallback for earlier versions that don't require Type parameter
-            blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
-                    GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
-                .build();
-        }
+        // Create BlockEntityType with Type.DUMMY for 1.20.5+
+        BlockEntityType<GraveBlockEntity> blockEntityType = BlockEntityType.Builder.create(GraveBlockEntity::new,
+                GraveBlocks.GRAVE, GraveBlocks.GRAVE_OLD, GraveBlocks.GRAVE_WEATHERED, GraveBlocks.GRAVE_FORGOTTEN)
+            .build(com.mojang.datafixers.types.Type.DUMMY);
 
         GraveBlocks.GRAVE_BLOCK_ENTITY = Registry.register(Registries.BLOCK_ENTITY_TYPE, MOD_ID + ":" + BRAND_BLOCK,
             blockEntityType);
