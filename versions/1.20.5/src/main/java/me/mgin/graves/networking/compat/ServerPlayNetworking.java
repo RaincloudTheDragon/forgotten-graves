@@ -10,8 +10,8 @@ import java.util.Map;
 
 /**
  * Compatibility layer for ServerPlayNetworking in 1.20.5
- * This provides placeholders that will be replaced with proper implementation
- * when the Fabric API is finalized
+ * This provides a functional implementation for the basic networking needed
+ * to get the mod running in 1.20.5
  */
 public class ServerPlayNetworking {
     // Store packet receivers for identifier-based approach
@@ -24,14 +24,23 @@ public class ServerPlayNetworking {
      * Send a packet to a player using the old identifier+buffer approach
      */
     public static void send(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
-        // This is a placeholder that will be implemented when Fabric API is available
+        if (player == null || player.networkHandler == null) return;
+        
+        try {
+            // Use Fabric API's ServerPlayNetworking
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(player, identifier, buf);
+        } catch (Exception e) {
+            System.err.println("Failed to send packet to player: " + e.getMessage());
+        }
     }
     
     /**
      * Send a payload to a player using the new CustomPayload approach
+     * Not fully implemented yet but provided for API compatibility
      */
     public static void send(ServerPlayerEntity player, CustomPayload payload) {
-        // This is a placeholder that will be implemented when Fabric API is available
+        // Not fully implemented yet
+        System.out.println("CustomPayload sending not fully implemented yet");
     }
     
     /**
@@ -43,9 +52,10 @@ public class ServerPlayNetworking {
     
     /**
      * Register a global receiver for payloads from clients
+     * Not fully implemented yet but provided for API compatibility
      */
     public static <T extends CustomPayload> void registerGlobalReceiver(CustomPayload.Id<T> id, PayloadHandler<T> handler) {
-        // This is a placeholder that will be implemented when Fabric API is available
+        // Store for later implementation
         PAYLOAD_HANDLERS.put(id.toString(), handler);
     }
     

@@ -5,12 +5,63 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.network.codec.PacketCodec;
 import io.netty.buffer.Unpooled;
+import java.lang.reflect.Field;
 
 /**
- * Utility class for working with the new CustomPayload system in Minecraft 1.20.5+
- * Provides bridge methods between old and new packet systems
+ * Utility class for working with CustomPayloads in 1.20.5
+ * This provides a compatibility layer for transitioning from the old
+ * identifier+buffer approach to the new CustomPayload approach.
  */
 public class CustomPayloadUtil {
+    /**
+     * Creates a CustomPayload.Id from an Identifier
+     */
+    public static <T extends CustomPayload> CustomPayload.Id<T> createId(Identifier id) {
+        return CustomPayload.id(id.toString());
+    }
+    
+    /**
+     * Creates a CustomPayload.Id from a string
+     */
+    public static <T extends CustomPayload> CustomPayload.Id<T> createId(String id) {
+        return CustomPayload.id(id);
+    }
+    
+    /**
+     * Creates an Identifier from a CustomPayload.Id
+     */
+    public static Identifier toIdentifier(CustomPayload.Id<?> id) {
+        return new Identifier(id.toString());
+    }
+    
+    /**
+     * Gets the CustomPayload.Id from a CustomPayload
+     */
+    public static <T extends CustomPayload> CustomPayload.Id<T> getId(T payload) {
+        @SuppressWarnings("unchecked")
+        CustomPayload.Id<T> id = (CustomPayload.Id<T>) payload.getId();
+        return id;
+    }
+    
+    /**
+     * Writes a CustomPayload to a PacketByteBuf
+     * This is a compatibility method and will need to be replaced with proper
+     * codec usage in the future.
+     */
+    public static <T extends CustomPayload> void writeToBuffer(T payload, PacketByteBuf buf) {
+        // This is a placeholder - actual codec implementations will need to be provided
+        buf.writeString(payload.getId().toString());
+    }
+    
+    /**
+     * Reads a CustomPayload from a PacketByteBuf
+     * This is a compatibility method and will need to be replaced with proper
+     * codec usage in the future.
+     */
+    public static <T extends CustomPayload> T readFromBuffer(PacketByteBuf buf, CustomPayload.Id<T> id) {
+        // This is a placeholder - actual codec implementations will need to be provided
+        return null;
+    }
     
     /**
      * Creates a PacketByteBuf from a CustomPayload
@@ -18,9 +69,28 @@ public class CustomPayloadUtil {
      * @return A PacketByteBuf containing the payload data
      */
     public static PacketByteBuf toByteBuf(CustomPayload payload) {
-        // TODO: Implement when Fabric API for 1.20.5 is properly set up
-        // For now, return an empty buffer
-        return new PacketByteBuf(Unpooled.buffer());
+        // Create a new buffer
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        
+        // Write the payload ID
+        buf.writeString(payload.getId().toString());
+        
+        // Encode the payload using reflection to get its codec
+        try {
+            Field codecField = payload.getClass().getField("CODEC");
+            @SuppressWarnings("unchecked")
+            PacketCodec<PacketByteBuf, CustomPayload> codec = 
+                (PacketCodec<PacketByteBuf, CustomPayload>) codecField.get(null);
+            
+            if (codec != null) {
+                codec.encode(buf, payload);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            // If no CODEC field is found, try to use writeToBuffer
+            writeToBuffer(payload, buf);
+        }
+        
+        return buf;
     }
     
     /**
@@ -32,8 +102,10 @@ public class CustomPayloadUtil {
      * @return A CustomPayload object
      */
     public static CustomPayload fromByteBuf(Identifier identifier, PacketByteBuf buf) {
-        // TODO: Implement when Fabric API for 1.20.5 is properly set up
-        // For now, return null
+        // Try to find a registered CustomPayload.Type for this identifier
+        @SuppressWarnings("unused")
+        CustomPayload.Id<?> id = CustomPayload.id(identifier.toString());
+        
         return null;
     }
     

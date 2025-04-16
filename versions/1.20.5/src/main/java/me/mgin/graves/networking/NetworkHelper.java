@@ -6,6 +6,9 @@ import net.minecraft.util.Identifier;
 import me.mgin.graves.networking.compat.ServerPlayNetworking;
 import me.mgin.graves.networking.compat.ClientPlayNetworking;
 
+/**
+ * Helper class for networking operations that works with the compatibility layer
+ */
 public class NetworkHelper {
     /**
      * Sends a packet to a player using the identifier and buffer approach
@@ -31,4 +34,4 @@ public class NetworkHelper {
             sendToServer((Identifier)packetId, buf);
         }
     }
-}
+} 

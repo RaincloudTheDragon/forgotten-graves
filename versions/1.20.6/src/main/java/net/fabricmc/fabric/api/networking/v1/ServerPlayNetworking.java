@@ -1,21 +1,20 @@
-package net.fabricmc.fabric.api.client.networking.v1;
+package net.fabricmc.fabric.api.networking.v1;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 /**
- * Client networking compatibility class for 1.20.6
+ * Server networking compatibility class for 1.20.6
  * Delegates to our own internal implementation
  */
-public class ClientPlayNetworking {
+public class ServerPlayNetworking {
     /**
-     * Send a packet to the server
+     * Send a packet to a player
      */
-    public static void send(Identifier identifier, PacketByteBuf buf) {
+    public static void send(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
         // Delegate to our own compatibility layer
-        me.mgin.graves.networking.compat.ClientPlayNetworking.send(identifier, buf);
+        me.mgin.graves.networking.compat.ServerPlayNetworking.send(player, identifier, buf);
     }
     
     /**
@@ -23,22 +22,18 @@ public class ClientPlayNetworking {
      */
     public static void registerReceiver(Identifier identifier, PlayChannelHandler handler) {
         // Delegate to our own compatibility layer
-        me.mgin.graves.networking.compat.ClientPlayNetworking.registerGlobalReceiver(identifier, 
-            (id, buf, context) -> {
+        me.mgin.graves.networking.compat.ServerPlayNetworking.registerGlobalReceiver(identifier, 
+            (player, id, buf, context) -> {
                 // Create a sender to pass to the original handler
                 PacketSender sender = new PacketSender() {
                     @Override
                     public void sendPacket(Identifier channelId, PacketByteBuf data) {
-                        ClientPlayNetworking.send(channelId, data);
+                        ServerPlayNetworking.send(player, channelId, data);
                     }
                 };
                 
                 // Call the original handler
-                MinecraftClient client = MinecraftClient.getInstance();
-                ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-                if (networkHandler != null) {
-                    handler.receive(client, networkHandler, buf, sender);
-                }
+                handler.receive(player, buf, sender);
             }
         );
     }
@@ -55,7 +50,7 @@ public class ClientPlayNetworking {
      */
     @FunctionalInterface
     public interface PlayChannelHandler {
-        void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender);
+        void receive(ServerPlayerEntity player, PacketByteBuf buf, PacketSender responseSender);
     }
     
     /**

@@ -2,56 +2,36 @@ package me.mgin.graves.networking;
 
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import me.mgin.graves.networking.compat.ServerPlayNetworking;
 import me.mgin.graves.networking.compat.ClientPlayNetworking;
 
 /**
- * NetworkHelper provides utility methods for sending packets between server and client
- * This implementation includes compatibility with both 1.20.5+ and pre-1.20.5 systems.
- * 
- * This is a temporary implementation until the Fabric API is fully stabilized for 1.20.5/1.20.6.
- * The compatibility layer in the 'compat' package provides placeholder implementations
- * that will be replaced with the actual Fabric API when available.
+ * Helper class for networking operations that works with the compatibility layer
  */
 public class NetworkHelper {
     /**
-     * Send a payload to a player using the new CustomPayload system
+     * Sends a packet to a player using the identifier and buffer approach
      */
-    public static void sendToPlayer(ServerPlayerEntity player, CustomPayload payload) {
-        // Delegate to ServerPlayNetworking compatibility layer
-        ServerPlayNetworking.send(player, payload);
+    public static void sendToPlayer(ServerPlayerEntity player, Identifier channel, PacketByteBuf buf) {
+        // Delegate to our compatibility layer
+        ServerPlayNetworking.send(player, channel, buf);
     }
     
     /**
-     * Temporary compatibility method to support old code
-     * Converts old identifier+buffer pattern to new payload system when possible
+     * Sends a packet to the server using the identifier and buffer approach
      */
-    public static void sendToPlayer(ServerPlayerEntity player, Identifier identifier, PacketByteBuf buf) {
-        // Delegate to ServerPlayNetworking compatibility layer
-        ServerPlayNetworking.send(player, identifier, buf);
+    public static void sendToServer(Identifier channel, PacketByteBuf buf) {
+        // Delegate to our compatibility layer
+        ClientPlayNetworking.send(channel, buf);
     }
     
     /**
-     * Send a payload to the server using the new CustomPayload system
-     */
-    public static void sendToServer(CustomPayload payload) {
-        // Delegate to ClientPlayNetworking compatibility layer
-        ClientPlayNetworking.send(payload);
-    }
-    
-    /**
-     * Temporary compatibility method for client-to-server packets
-     * Converts old identifier+buffer pattern to new payload system when possible
+     * Generic method to handle object packet ID
      */
     public static void sendToServer(Object packetId, PacketByteBuf buf) {
         if (packetId instanceof Identifier) {
-            // Delegate to ClientPlayNetworking compatibility layer
-            ClientPlayNetworking.send((Identifier)packetId, buf);
-        } else if (packetId instanceof CustomPayload.Id<?>) {
-            // Future support for CustomPayload.Id
-            // Will be implemented when the Fabric API for 1.20.6 is stabilized
+            sendToServer((Identifier)packetId, buf);
         }
     }
-}
+} 

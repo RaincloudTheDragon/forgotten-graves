@@ -8,7 +8,11 @@ import me.mgin.graves.networking.config.event.ConfigNetworkingEvents;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 
+/**
+ * Client initializer for 1.20.5 version
+ */
 public class GravesClient implements ClientModInitializer {
+    // Access to the server config
     public static GravesConfig SERVER_CONFIG = null;
 
     // Access to the client grave manager
@@ -22,5 +26,7 @@ public class GravesClient implements ClientModInitializer {
         // Register config networking
         ConfigNetworkingEvents.registerClientEvents();
         ConfigNetworking.registerS2CPackets();
+        
+        System.out.println("Graves client initialized for 1.20.5!");
     }
 } 

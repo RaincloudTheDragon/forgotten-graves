@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "forgottengraves",
-  "version": "1.0.0+1.20.5",
+  "version": "${version}",
 
   "name": "Forgotten Graves",
   "description": "Stores items and XP in an aging grave upon death",
@@ -30,10 +30,10 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.16.13",
-    "fabric": ">=0.97.7+1.20.5",
-    "minecraft": "1.20.5",
-    "cloth-config": ">=13.0.138"
+    "fabricloader": ">=${loader_version}",
+    "fabric": ">=${fabric_version}",
+    "minecraft": "${minecraft_version}",
+    "cloth-config": ">=${cloth_config_version}"
   },
 
   "recommends": {
@@ -43,7 +43,6 @@
   "suggests": {
     "trinkets": "*",
     "backslot": "*",
-    "inventorio": "*",
-    "create": "*"
+    "inventorio": "*"
   }
 }

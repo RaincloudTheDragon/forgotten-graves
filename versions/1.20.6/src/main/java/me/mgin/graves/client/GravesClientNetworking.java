@@ -2,6 +2,7 @@ package me.mgin.graves.client;
 
 import me.mgin.graves.networking.compat.ClientPlayNetworking;
 import me.mgin.graves.networking.PacketIdentifiers;
+import me.mgin.graves.networking.config.ConfigNetworking;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -9,12 +10,19 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 
 @Environment(EnvType.CLIENT)
 public class GravesClientNetworking implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        // Register client-side packet handling for configuration networking
+        registerConfigS2CReceivers();
+        
         // Get the client grave manager instance
         ClientGraveManager graveManager = ClientGraveManager.getInstance();
         
@@ -55,5 +63,41 @@ public class GravesClientNetworking implements ClientModInitializer {
                 // Ignore
             }
         });
+    }
+    
+    private void registerConfigS2CReceivers() {
+        // Using SimplePayload as a placeholder
+        // Define a simple packet codec for empty payloads
+        PacketCodec<PacketByteBuf, ConfigNetworking.SimplePayload> emptyCodec = PacketCodec.of(
+            (payload, buf) -> {}, // No data to write
+            buf -> new ConfigNetworking.SimplePayload() // No data to read
+        );
+        
+        // Register handlers for the config-related identifiers
+        for (Identifier id : new Identifier[] {
+            ConfigNetworking.REQUEST_CONFIG_S2C,
+            ConfigNetworking.RELOAD_CONFIG_S2C,
+            ConfigNetworking.RESET_CONFIG_S2C,
+            ConfigNetworking.SET_CONFIG_S2C,
+            ConfigNetworking.STORE_CONFIG_S2C
+        }) {
+            CustomPayload.Id<ConfigNetworking.SimplePayload> payloadId = CustomPayload.id(id.toString());
+            
+            // Register the payload type
+            PayloadTypeRegistry.configurationS2C().register(payloadId, emptyCodec);
+            
+            // Register the handler
+            ClientConfigurationNetworking.registerGlobalReceiver(payloadId, (payload, context) -> {
+                // Handle the packet based on the ID
+                if (id.equals(ConfigNetworking.REQUEST_CONFIG_S2C)) {
+                    // Handle request config
+                } else if (id.equals(ConfigNetworking.RELOAD_CONFIG_S2C)) {
+                    // Handle reload config
+                } else if (id.equals(ConfigNetworking.RESET_CONFIG_S2C)) {
+                    // Handle reset config
+                }
+                // etc...
+            });
+        }
     }
 } 

@@ -48,6 +48,22 @@ task copyResourcesToVersions {
     }
 }
 
+// Configure sourceSets for version-specific branches
+project.afterEvaluate {
+    // Only if we're building a specific version
+    if (stonecutter.current.isActive) {
+        // Exclude main sources from compilation in versioned builds
+        sourceSets {
+            main {
+                java {
+                    // Don't compile any main sources when building a specific version
+                    srcDirs = []
+                }
+            }
+        }
+    }
+}
+
 // Make sure resources are copied before processing
 processResources.dependsOn copyResourcesToVersions
 

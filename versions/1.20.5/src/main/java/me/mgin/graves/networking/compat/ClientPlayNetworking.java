@@ -23,24 +23,24 @@ public class ClientPlayNetworking {
      * Send a packet to the server using the legacy identifier+buffer approach
      */
     public static void send(Identifier identifier, PacketByteBuf buf) {
-        // This is a compatibility method that would use the new Fabric API when available
-        // For now it's a placeholder
         MinecraftClient client = MinecraftClient.getInstance();
         if (client != null && client.getNetworkHandler() != null) {
-            // This will be implemented when Fabric API for 1.20.5 is stabilized
+            try {
+                // Use Fabric API's ClientPlayNetworking
+                net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(identifier, buf);
+            } catch (Exception e) {
+                System.err.println("Failed to send packet to server: " + e.getMessage());
+            }
         }
     }
     
     /**
      * Send a payload to the server using the new CustomPayload system
+     * Not fully implemented yet but provided for API compatibility
      */
     public static void send(CustomPayload payload) {
-        // This is a compatibility method that would use the new Fabric API when available
-        // For now it's a placeholder
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null && client.getNetworkHandler() != null) {
-            // This will be implemented when Fabric API for 1.20.5 is stabilized
-        }
+        // Not fully implemented yet
+        System.out.println("CustomPayload sending not fully implemented yet");
     }
     
     /**
@@ -52,6 +52,7 @@ public class ClientPlayNetworking {
     
     /**
      * Register a receiver for a specific payload type
+     * Not fully implemented yet but provided for API compatibility
      */
     public static <T extends CustomPayload> void registerGlobalReceiver(CustomPayload.Id<T> id, PayloadHandler<T> handler) {
         PAYLOAD_HANDLERS.put(id.toString(), handler);

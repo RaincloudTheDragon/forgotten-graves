@@ -4,59 +4,50 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
-import io.netty.buffer.Unpooled;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Client networking compatibility class for 1.20.5
+ * Delegates to our own internal implementation
  */
 public class ClientPlayNetworking {
-    // Store handlers for channels
-    private static final Map<Identifier, PlayChannelHandler> HANDLERS = new HashMap<>();
-    
     /**
      * Send a packet to the server
      */
     public static void send(Identifier id, PacketByteBuf buf) {
-        // This will be implemented when Fabric API for 1.20.5 is stabilized
-        // For now it's just a placeholder
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null && client.getNetworkHandler() != null) {
-            // Send packet logic will go here
-            System.out.println("Sending packet to " + id);
-        }
+        // Delegate to our own compatibility layer
+        me.mgin.graves.networking.compat.ClientPlayNetworking.send(id, buf);
     }
     
     /**
-     * Send a custom payload to the server 
-     * (Method intentionally has different signature to avoid type issues)
+     * Send a custom payload to the server
      */
-    public static void send(CustomPayload payload) {
-        // This will be implemented when Fabric API for 1.20.5 is stabilized
-        // For now it's just a placeholder
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client != null && client.getNetworkHandler() != null) {
-            // Send payload logic will go here
-            System.out.println("Sending payload " + payload.getId());
-        }
+    public static <T extends CustomPayload> void send(T payload) {
+        // Delegate to our own compatibility layer
+        me.mgin.graves.networking.compat.ClientPlayNetworking.send(payload);
     }
     
     /**
      * Register a packet receiver
      */
     public static void registerReceiver(Identifier id, PlayChannelHandler handler) {
-        // Just store the handler
-        HANDLERS.put(id, handler);
-        System.out.println("Registered handler for " + id);
+        // Delegate to our own compatibility layer
+        me.mgin.graves.networking.compat.ClientPlayNetworking.registerGlobalReceiver(id, 
+            (identifier, buf, context) -> handler.receive(MinecraftClient.getInstance(), 
+                new ClientPlayNetworkHandler() {}, buf, new PacketSender() {
+                    @Override
+                    public void sendPacket(Identifier packetId, PacketByteBuf buf) {
+                        ClientPlayNetworking.send(packetId, buf);
+                    }
+                }
+            )
+        );
     }
     
     /**
      * Create an empty PacketByteBuf
      */
     public static PacketByteBuf create() {
-        return new PacketByteBuf(Unpooled.buffer());
+        return me.mgin.graves.networking.compat.PacketByteBufs.create();
     }
     
     /**

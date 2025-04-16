@@ -1,7 +1,7 @@
 package me.mgin.graves.networking.compat;
 
-import net.minecraft.network.PacketByteBuf;
 import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
 
 /**
  * Temporary compatibility class to handle compilation with 1.20.5
@@ -15,5 +15,14 @@ public class PacketByteBufs {
     public static PacketByteBuf create() {
         // This is a temporary implementation
         return new PacketByteBuf(Unpooled.buffer());
+    }
+    
+    /**
+     * Copies the contents of a PacketByteBuf
+     */
+    public static PacketByteBuf copy(PacketByteBuf buf) {
+        PacketByteBuf copy = create();
+        copy.writeBytes(buf.slice());
+        return copy;
     }
 } 
