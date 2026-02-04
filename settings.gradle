@@ -20,8 +20,8 @@ rootProject.name = "forgottengraves"
 
 stonecutter {
     shared {
-        // Supporting both 1.20.5 and 1.20.6
-        versions "1.20.5", "1.20.6"
+        // Supporting only 1.20.5
+        versions "1.20.5"
     }
 
     create rootProject
@@ -30,6 +30,3 @@ stonecutter {
 // Include version-specific projects
 include ':1.20.5'
 project(':1.20.5').projectDir = file('versions/1.20.5')
-
-include ':1.20.6'
-project(':1.20.6').projectDir = file('versions/1.20.6')

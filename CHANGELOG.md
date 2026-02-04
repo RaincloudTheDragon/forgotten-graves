@@ -1,9 +1,9 @@
 # 3.2.19-beta
 
-Supports Minecraft versions: `1.20.5`, `1.20.6`
+Supports Minecraft version: `1.20.5`
 
 ## Added
-- Initial support for Minecraft 1.20.5 and 1.20.6
+- Support for Minecraft 1.20.5
 - Compatibility with Fabric Loader 0.15.6+ and Fabric API 0.97.8+
 
 ## Fixed
