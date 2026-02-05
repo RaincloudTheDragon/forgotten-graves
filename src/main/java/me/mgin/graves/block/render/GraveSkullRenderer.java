@@ -1,7 +1,9 @@
 package me.mgin.graves.block.render;
 
 import com.mojang.authlib.GameProfile;
+//? if >=1.20.5 {
 import me.mgin.graves.compat.ProfileCompat;
+//?}
 import me.mgin.graves.block.GraveBlockBase;
 import me.mgin.graves.block.entity.GraveBlockEntity;
 import me.mgin.graves.block.render.packs.GraveResourcePack;
@@ -18,7 +20,9 @@ import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.client.render.entity.model.SkullEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.nbt.NbtCompound;
+//? if <1.20.5 {
 import net.minecraft.nbt.NbtHelper;
+//?}
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 

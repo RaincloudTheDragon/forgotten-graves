@@ -1,6 +1,8 @@
 package me.mgin.graves.event.server.useblock.item;
 
+//? if >=1.20.5 {
 import me.mgin.graves.compat.ItemStackCompat;
+//?}
 import me.mgin.graves.block.entity.GraveBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;

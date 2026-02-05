@@ -3,8 +3,6 @@ package me.mgin.graves.compat;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
 
-import java.lang.reflect.Method;
-
 /**
  * Compatibility layer for GlobalPos operations that have changed in Minecraft 1.20.5
  */

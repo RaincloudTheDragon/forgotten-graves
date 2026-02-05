@@ -1,6 +1,8 @@
 package me.mgin.graves.block.utility;
 
+//? if >=1.20.5 {
 import me.mgin.graves.compat.BlockEntityCompat;
+//?}
 import com.mojang.authlib.GameProfile;
 import me.mgin.graves.Graves;
 import me.mgin.graves.api.InventoriesApi;

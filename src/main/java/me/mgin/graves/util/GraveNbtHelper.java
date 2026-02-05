@@ -1,10 +1,12 @@
 package me.mgin.graves.util;
 
+//? if >=1.20.5 {
 import me.mgin.graves.compat.ItemStackCompat;
-import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.mgin.graves.compat.ProfileCompat;
 import me.mgin.graves.compat.SerializationHelper;
+//?}
+import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.mgin.graves.versioned.VersionedCode;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.item.ItemStack;

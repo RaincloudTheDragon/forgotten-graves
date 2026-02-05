@@ -1,7 +1,9 @@
 package me.mgin.graves.event.server;
 
+//? if >=1.20.5 {
 import me.mgin.graves.compat.GlobalPosCompat;
 import me.mgin.graves.compat.ItemStackCompat;
+//?}
 import com.mojang.authlib.GameProfile;
 import me.mgin.graves.api.InventoriesApi;
 import me.mgin.graves.block.entity.GraveBlockEntity;

@@ -96,7 +96,7 @@ public class DeathCompassTest {
 
     public static void pointsToDeathPosWhenGravesDisabled(TestContext context, PlayerEntity player) {
         GravesConfig config = GravesConfig.getConfig();
-        World world = GraveTestHelper.getWorld(player, World.OVERWORLD);
+        GraveTestHelper.getWorld(player, World.OVERWORLD);
         config.main.graves = false;
 
         System.out.println("📗 Running removeCompassFromInventory");

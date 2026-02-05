@@ -1,6 +1,8 @@
 package me.mgin.graves.block.utility;
 
+//? if >=1.20.5 {
 import me.mgin.graves.compat.ItemStackCompat;
+//?}
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;

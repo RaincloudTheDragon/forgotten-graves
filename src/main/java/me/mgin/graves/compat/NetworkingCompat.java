@@ -4,7 +4,6 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
