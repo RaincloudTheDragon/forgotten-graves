@@ -43,6 +43,7 @@ public class Graves implements ModInitializer {
         Commands.registerServerCommands();
         Events.registerServerEvents();
         GraveEffects.register(MOD_ID);
+        ConfigNetworking.registerPayloadTypes();
         ConfigNetworking.registerC2SPackets();
         ConfigNetworkingEvents.registerServerEvents();
 
