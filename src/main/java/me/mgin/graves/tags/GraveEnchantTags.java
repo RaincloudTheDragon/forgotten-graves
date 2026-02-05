@@ -1,5 +1,6 @@
 package me.mgin.graves.tags;
 
+import me.mgin.graves.compat.ItemStackCompat;
 import me.mgin.graves.versioned.VersionedCode;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -30,14 +31,20 @@ public class GraveEnchantTags {
     }
 
     public static boolean hasResoluteIvy(ItemStack stack) {
+        //? if >=1.20.5 {
+        return ItemStackCompat.hasNbt(stack) && ItemStackCompat.getOrCreateNbt(stack).contains("Botania_keepIvy");
+        //?} else {
         return stack.hasNbt() && stack.getOrCreateNbt().contains("Botania_keepIvy");
+        //?}
     }
 
     private static boolean hasTaggedEnchantment(ItemStack stack, TagKey<Enchantment> tag) {
         if (!stack.hasEnchantments()) return false;
 
-        for (Enchantment enchant : EnchantmentHelper.get(stack).keySet()) {
-            RegistryEntry<Enchantment> entry = Registries.ENCHANTMENT.getEntry(enchant);
+        for (Object key : EnchantmentHelper.get(stack).keySet()) {
+            RegistryEntry<Enchantment> entry = key instanceof RegistryEntry
+                ? (RegistryEntry<Enchantment>) key
+                : Registries.ENCHANTMENT.getEntry((Enchantment) key);
             if (entry.isIn(tag)) return true;
         }
 

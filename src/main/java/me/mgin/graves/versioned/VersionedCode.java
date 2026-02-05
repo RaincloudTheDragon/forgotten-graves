@@ -11,6 +11,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 /**
  * This class contains abstractions that are used in conjunction with stonecutter-kt
@@ -20,24 +21,24 @@ import net.minecraft.util.Identifier;
  */
 public class VersionedCode {
     public static Text textFromJson(String json) {
-        // Handle cases where the json is in fact not json but a plain string
         if (!json.startsWith("{")) {
             return Text.literal(json.replace("\"", ""));
         }
-
-        //? if >1.20.2 {
-        /*return Text.Serialization.fromJson(json);
-        *///?} else {
-        return Text.Serializer.fromJson((json));
+        //? if >=1.20.5 {
+        var lookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
+        return lookup != null ? Text.Serialization.fromJson(json, lookup) : Text.literal(json.replace("\"", ""));
+        //?} else {
+        return Text.Serializer.fromJson(json);
         //?}
     }
 
     public static String textToJson(Text text) {
-        /*? if >1.20.2 {*/
-        /*return Text.Serialization.toJsonString(text);
-        *//*?} else {*/
+        //? if >=1.20.5 {
+        var lookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
+        return lookup != null ? Text.Serialization.toJsonString(text, lookup) : text.getString();
+        //?} else {
         return Text.Serializer.toJson(text);
-        /*?}*/
+        //?}
     }
 
     //? if >=1.20.5 {
@@ -80,8 +81,12 @@ public class VersionedCode {
         public static TagKey<Enchantment> createCustomEnchantTag(String name) {
             return TagKey.of(RegistryKeys.ENCHANTMENT, new Identifier(Graves.MOD_ID, name));
         }
+    }
 
-
+    public static class Worlds {
+        public static String getDimensionKey(World world) {
+            return me.mgin.graves.compat.WorldCompat.getDimensionKey(world);
+        }
     }
 
 

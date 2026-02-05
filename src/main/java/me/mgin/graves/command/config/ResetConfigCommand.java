@@ -4,10 +4,10 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import me.mgin.graves.command.utility.ArgumentUtility;
 import me.mgin.graves.config.GravesConfig;
+import me.mgin.graves.compat.NetworkingCompat;
 import me.mgin.graves.networking.config.ConfigNetworking;
 import me.mgin.graves.util.Responder;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -54,7 +54,7 @@ public class ResetConfigCommand {
         ServerPlayerEntity player = source.getPlayer();
 
         if (player != null) {
-            ServerPlayNetworking.send(player, ConfigNetworking.RESET_CONFIG_S2C, PacketByteBufs.create());
+            NetworkingCompat.send(player, ConfigNetworking.RESET_CONFIG_S2C, PacketByteBufs.create());
             res.sendSuccess(Text.translatable("command.config.reset:success"), null);
         } else {
             res.sendError(Text.translatable("command.generic:error.not-player"), null);
