@@ -1,5 +1,6 @@
 package me.mgin.graves.tags;
 
+import me.mgin.graves.compat.EnchantmentHelperCompat;
 import me.mgin.graves.compat.ItemStackCompat;
 import me.mgin.graves.versioned.VersionedCode;
 import net.minecraft.enchantment.Enchantment;
@@ -41,12 +42,19 @@ public class GraveEnchantTags {
     private static boolean hasTaggedEnchantment(ItemStack stack, TagKey<Enchantment> tag) {
         if (!stack.hasEnchantments()) return false;
 
-        for (Object key : EnchantmentHelper.get(stack).keySet()) {
+        //? if >=1.20.5 {
+        for (Object key : EnchantmentHelperCompat.getEnchantments(stack).keySet()) {
             RegistryEntry<Enchantment> entry = key instanceof RegistryEntry
                 ? (RegistryEntry<Enchantment>) key
                 : Registries.ENCHANTMENT.getEntry((Enchantment) key);
             if (entry.isIn(tag)) return true;
         }
+        //?} else {
+        for (Enchantment enchant : EnchantmentHelper.get(stack).keySet()) {
+            RegistryEntry<Enchantment> entry = Registries.ENCHANTMENT.getEntry(enchant);
+            if (entry.isIn(tag)) return true;
+        }
+        //?}
 
         return false;
     }

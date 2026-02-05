@@ -1,13 +1,16 @@
 package me.mgin.graves.mixin;
 
 import com.mojang.authlib.GameProfile;
+import me.mgin.graves.effects.GraveEffects;
 import me.mgin.graves.block.utility.PlaceGrave;
 import me.mgin.graves.config.GravesConfig;
-import me.mgin.graves.effects.GraveEffects;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -48,7 +51,13 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         boolean preventedInPvP = disabledInPvP && (player.getLastAttacker() instanceof PlayerEntity);
 
         // Players with DISABLE_GRAVES_EFFECT active will not have a grave spawn.
+        //? if >=1.20.5 {
+        var key = Registries.STATUS_EFFECT.getKey(GraveEffects.DISABLE_GRAVES_EFFECT).orElseThrow();
+        boolean preventedByEffect = player.getActiveStatusEffects().keySet().stream()
+            .anyMatch(entry -> entry.matchesId(key.getValue()));
+        //?} else {
         boolean preventedByEffect = player.hasStatusEffect(GraveEffects.DISABLE_GRAVES_EFFECT);
+        //?}
 
         // Graves will not spawn if respectKeepInventory & keepInventory are set to true.
         boolean keepInventory = this.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY);

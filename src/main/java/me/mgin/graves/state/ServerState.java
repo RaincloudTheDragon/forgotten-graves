@@ -69,7 +69,7 @@ public class ServerState extends PersistentState {
         null
     );
     //?}
-    //? if >=1.20.2 and <1.20.5 {
+    //? if >=1.20.2 && <1.20.5 {
     private static final Type<ServerState> type = new Type<>(
         ServerState::new,
         ServerState::createFromNbt,
