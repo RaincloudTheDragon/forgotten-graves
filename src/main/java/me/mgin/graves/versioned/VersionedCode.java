@@ -27,6 +27,8 @@ public class VersionedCode {
         //? if >=1.20.5 {
         var lookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
         return lookup != null ? Text.Serialization.fromJson(json, lookup) : Text.literal(json.replace("\"", ""));
+        //?} else if >=1.20.3 {
+        return Text.Serialization.fromJson(json);
         //?} else {
         return Text.Serializer.fromJson(json);
         //?}
@@ -36,6 +38,8 @@ public class VersionedCode {
         //? if >=1.20.5 {
         var lookup = me.mgin.graves.compat.SerializationHelper.getWrapperLookup();
         return lookup != null ? Text.Serialization.toJsonString(text, lookup) : text.getString();
+        //?} else if >=1.20.3 {
+        return Text.Serialization.toJsonString(text);
         //?} else {
         return Text.Serializer.toJson(text);
         //?}
