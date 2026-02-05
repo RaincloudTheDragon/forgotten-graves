@@ -49,7 +49,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void RetrieveGraveTests(TestContext context) {
+    public void RetrieveGraveTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -71,7 +71,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void decayTests(TestContext context) {
+    public void decayTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -97,7 +97,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void experienceTests(TestContext context) {
+    public void experienceTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -120,7 +120,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void waterlogTests(TestContext context) {
+    public void waterlogTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -137,7 +137,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void explosionTests(TestContext context) {
+    public void explosionTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -158,7 +158,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void permissionTests(TestContext context) {
+    public void permissionTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 
@@ -180,7 +180,7 @@ public class GraveTest {
     }
 
     @GameTest(templateName = "forgottengraves:generic_tests")
-    public static void deathCompassTests(TestContext context) {
+    public void deathCompassTests(TestContext context) {
         PlayerEntity player = GameTestCompat.createMockSurvivalPlayer(context);
         BlockPos pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
 

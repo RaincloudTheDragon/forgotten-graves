@@ -21,7 +21,18 @@ import java.util.UUID;
  */
 public class SerializationHelper {
 
+    private static volatile WrapperLookup CACHED_WRAPPER_LOOKUP = null;
+
+    public static void setWrapperLookup(WrapperLookup lookup) {
+        if (lookup != null) {
+            CACHED_WRAPPER_LOOKUP = lookup;
+        }
+    }
+
     public static WrapperLookup getWrapperLookup() {
+        WrapperLookup cached = CACHED_WRAPPER_LOOKUP;
+        if (cached != null) return cached;
+
         try {
             try {
                 Method getWrapperLookupMethod = DynamicRegistryManager.class.getMethod("getWrapperLookup");
