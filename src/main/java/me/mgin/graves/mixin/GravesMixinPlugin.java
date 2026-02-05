@@ -1,5 +1,6 @@
 package me.mgin.graves.mixin;
 
+import net.fabricmc.loader.api.FabricLoader;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -17,9 +18,14 @@ public class GravesMixinPlugin implements IMixinConfigPlugin {
 
     private static boolean is1205OrNewer() {
         try {
-            Class.forName("net.minecraft.component.DataComponentTypes");
-            return true;
-        } catch (ClassNotFoundException e) {
+            String version = FabricLoader.getInstance()
+                .getModContainer("minecraft")
+                .orElseThrow()
+                .getMetadata()
+                .getVersion()
+                .getFriendlyString();
+            return version.startsWith("1.20.5") || version.startsWith("1.21");
+        } catch (Exception e) {
             return false;
         }
     }
