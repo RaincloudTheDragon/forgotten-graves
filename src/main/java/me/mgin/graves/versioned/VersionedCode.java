@@ -40,6 +40,16 @@ public class VersionedCode {
         /*?}*/
     }
 
+    //? if >=1.20.5 {
+    public static Item.Settings getItemSettings() {
+        return new Item.Settings();
+    }
+    //?} else {
+    /*public static net.fabricmc.fabric.api.item.v1.FabricItemSettings getItemSettings() {
+        return new net.fabricmc.fabric.api.item.v1.FabricItemSettings();
+    }
+    *///?}
+
     public static String getIssuerName(ServerPlayerEntity issuer) {
         //? if >1.20.2 {
         /*return issuer.getNameForScoreboard();
