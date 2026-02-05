@@ -108,7 +108,9 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
     /**
      * Allows for player owned grave retrieval via right click.
      */
+    //? if <1.20.5 {
     @Override
+    //?}
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand,
                               BlockHitResult hit) {
         GraveBlockEntity graveEntity = (GraveBlockEntity) world.getBlockEntity(pos);

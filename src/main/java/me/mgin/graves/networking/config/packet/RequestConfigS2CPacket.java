@@ -12,8 +12,10 @@ import net.minecraft.network.PacketByteBuf;
 public class RequestConfigS2CPacket {
     public static void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf _buf,
                                PacketSender sender) {
+        //? if <1.20.5 {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(GravesConfig.getConfig().serialize());
         ClientPlayNetworking.send(ConfigNetworking.APPLY_CONFIG_C2S, buf);
+        //?}
     }
 }

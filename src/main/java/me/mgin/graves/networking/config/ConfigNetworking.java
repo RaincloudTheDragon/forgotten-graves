@@ -18,20 +18,26 @@ public class ConfigNetworking {
     public static final Identifier STORE_CONFIG_S2C = new Identifier(Graves.MOD_ID, "store_config_s2c");
 
     /**
-     * Registers Client-to-Server packet receivers
+     * Registers Client-to-Server packet receivers.
+     * Config sync disabled for 1.20.5 (CustomPayload API migration pending).
      */
     public static void registerC2SPackets() {
+        //? if <1.20.5 {
         ServerPlayNetworking.registerGlobalReceiver(APPLY_CONFIG_C2S, ApplyConfigC2SPacket::receive);
         ServerPlayNetworking.registerGlobalReceiver(STORE_CONFIG_C2S, StoreConfigC2SPacket::receive);
+        //?}
     }
 
     /**
-     * Registers Server-to-Client packet receivers
+     * Registers Server-to-Client packet receivers.
+     * Config sync disabled for 1.20.5 (CustomPayload API migration pending).
      */
     public static void registerS2CPackets() {
+        //? if <1.20.5 {
         ClientPlayNetworking.registerGlobalReceiver(REQUEST_CONFIG_S2C, RequestConfigS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(RELOAD_CONFIG_S2C, ReloadClientConfigS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(RESET_CONFIG_S2C, ResetClientConfigS2CPacket::receive);
         ClientPlayNetworking.registerGlobalReceiver(STORE_CONFIG_S2C, StoreConfigS2CPacket::receive);
+        //?}
     }
 }

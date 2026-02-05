@@ -101,9 +101,11 @@ public class ConfigNetworkingEvents {
             return;
         }
 
+        //? if <1.20.5 {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(config.serialize());
         ClientPlayNetworking.send(ConfigNetworking.STORE_CONFIG_C2S, buf);
+        //?}
     }
 
     /**
@@ -114,9 +116,11 @@ public class ConfigNetworkingEvents {
      * @param player ServerPlayerEntity
      */
     private static void sendConfigS2C(GravesConfig config, ServerPlayerEntity player) {
+        //? if <1.20.5 {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(config.serialize());
         me.mgin.graves.compat.NetworkingCompat.send(player, ConfigNetworking.STORE_CONFIG_S2C, buf);
+        //?}
     }
 
 }
