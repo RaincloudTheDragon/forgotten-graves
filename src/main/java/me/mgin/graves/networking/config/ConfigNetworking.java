@@ -1,9 +1,11 @@
 package me.mgin.graves.networking.config;
 
 import me.mgin.graves.Graves;
+//? if <1.20.5 {
 import me.mgin.graves.networking.config.packet.*;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+//?}
 import net.minecraft.util.Identifier;
 
 public class ConfigNetworking {

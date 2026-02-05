@@ -4,13 +4,13 @@ import com.mojang.authlib.GameProfile;
 import me.mgin.graves.effects.GraveEffects;
 import me.mgin.graves.block.utility.PlaceGrave;
 import me.mgin.graves.config.GravesConfig;
-import net.minecraft.entity.effect.StatusEffect;
+//? if >=1.20.5 {
+import net.minecraft.registry.Registries;
+//?}
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;

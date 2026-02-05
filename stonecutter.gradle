@@ -4,7 +4,7 @@ stonecutter.active null  // All versions use generated source; run "Switch activ
 tasks.register("runBuildAll") {
     group = "multi-version"
     description = "Builds production jars for all versions"
-    dependsOn(stonecutter.tasks.named("build"))
+    dependsOn(stonecutter.tasks.named("build") { true })
 }
 
 tasks.register("runDatagenAll") {

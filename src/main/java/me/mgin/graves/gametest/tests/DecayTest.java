@@ -244,7 +244,7 @@ public class DecayTest {
         config.decay.minStageTimeSeconds = 60;
         config.decay.freshGraveDecayChance = 100;
 
-        if (block instanceof GraveBlockBase graveBlock) {
+        if (block instanceof GraveBlockBase) {
             // Run `randomTick`, as it contains the check for minStageTimeSeconds
             block.randomTick(state, (ServerWorld) world, pos, world.getRandom());
 
@@ -274,7 +274,7 @@ public class DecayTest {
 
         System.out.println("📗 Running maxStageTimeSeconds");
 
-        if (block instanceof GraveBlockBase graveBlock) {
+        if (block instanceof GraveBlockBase) {
             // Increment the timer to above default maxStageTimeSeconds (300)
             assert entity != null;
             ((GraveBlockEntity) entity).incrementTimer("decay", 240);

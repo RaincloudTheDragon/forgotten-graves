@@ -1,6 +1,5 @@
 package me.mgin.graves.compat;
 
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 
 import java.util.Map;
