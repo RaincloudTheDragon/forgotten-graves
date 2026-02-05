@@ -132,18 +132,14 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
      */
     @Override
     //? if >1.20.2 {
-    /*public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-    *///?} else {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        if (world.isClient) return state;
+    //?} else {
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        if (world.isClient) return;
     //?}
         this.setBrokenByPlayer(true);
         GraveBlockEntity graveEntity = (GraveBlockEntity) world.getBlockEntity(pos);
-
-        //? if >1.20.2 {
-        /*if (world.isClient) return state;
-        *///?} else {
-        if (world.isClient) return;
-        //?}
 
         if (Permission.playerCanBreakGrave(player, graveEntity)) {
             // This will be true if the grave had an owner
@@ -157,8 +153,8 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
         super.onBreak(world, pos, state, player);
         world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
         //? if >1.20.2 {
-        /*return state;
-        *///?}
+        return state;
+        //?}
     }
 
     public void onBreakRetainName(World world, BlockPos pos, PlayerEntity player, GraveBlockEntity graveEntity) {
@@ -166,7 +162,11 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
 
         // Create named item stack
         ItemStack itemStack = this.getItemStack();
+        //? if >=1.20.5 {
+        me.mgin.graves.compat.ItemStackCompat.setCustomName(itemStack, itemText);
+        //?} else {
         itemStack.setCustomName(itemText);
+        //?}
         ItemEntity itemEntity = new ItemEntity(world, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5,
             (double) pos.getZ() + 0.5, itemStack);
         itemEntity.setToDefaultPickupDelay();
@@ -203,12 +203,21 @@ public class GraveBlockBase extends HorizontalFacingBlock implements BlockEntity
     public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
 
-        if (!(blockEntity instanceof GraveBlockEntity graveEntity) || !itemStack.hasCustomName()) {
+        //? if >=1.20.5 {
+        boolean hasCustomName = me.mgin.graves.compat.ItemStackCompat.hasCustomName(itemStack);
+        //?} else {
+        boolean hasCustomName = itemStack.hasCustomName();
+        //?}
+        if (!(blockEntity instanceof GraveBlockEntity graveEntity) || !hasCustomName) {
             super.onPlaced(world, pos, state, placer, itemStack);
             return;
         }
 
+        //? if >=1.20.5 {
+        String customName = me.mgin.graves.compat.ItemStackCompat.getOrCreateSubNbt(itemStack, "display").getString("Name");
+        //?} else {
         String customName = itemStack.getOrCreateSubNbt("display").getString("Name");
+        //?}
         graveEntity.setCustomName(
             //? if >1.20.2 {
             /*// Handle custom names with newline characters

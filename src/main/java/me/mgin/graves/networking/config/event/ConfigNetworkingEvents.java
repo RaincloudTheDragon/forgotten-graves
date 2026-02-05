@@ -116,7 +116,7 @@ public class ConfigNetworkingEvents {
     private static void sendConfigS2C(GravesConfig config, ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeString(config.serialize());
-        ServerPlayNetworking.send(player, ConfigNetworking.STORE_CONFIG_S2C, buf);
+        me.mgin.graves.compat.NetworkingCompat.send(player, ConfigNetworking.STORE_CONFIG_S2C, buf);
     }
 
 }

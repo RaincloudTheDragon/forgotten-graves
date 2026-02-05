@@ -1,5 +1,6 @@
 package me.mgin.graves.block.utility;
 
+import me.mgin.graves.compat.BlockEntityCompat;
 import com.mojang.authlib.GameProfile;
 import me.mgin.graves.Graves;
 import me.mgin.graves.api.InventoriesApi;
@@ -70,7 +71,7 @@ public class RetrieveGrave {
 
         // Iterate over dimensions to locate dimension where the grave can be found
         for (ServerWorld world : Objects.requireNonNull(player.getServer()).getWorlds()) {
-            String dimensionKey = String.valueOf(world.getDimensionKey().getValue());
+            String dimensionKey = me.mgin.graves.versioned.VersionedCode.Worlds.getDimensionKey(world);
             String storedDimensionKey = graveEntityTag.getString("dimension");
             GraveBlockEntity graveEntity = null;
             boolean destroyGrave = true;
@@ -90,7 +91,11 @@ public class RetrieveGrave {
             if (graveEntity == null ) {
                 // Create new grave block entity and read the nbt tag into it
                 graveEntity = new GraveBlockEntity(pos, GraveBlocks.GRAVE.getDefaultState());
+                //? if >=1.20.5 {
+                BlockEntityCompat.readNbt(graveEntity, graveEntityTag);
+                //?} else {
                 graveEntity.readNbt(graveEntityTag);
+                //?}
                 // Do not delete any grave in that location
                 destroyGrave = false;
             }
